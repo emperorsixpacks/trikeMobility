@@ -45,6 +45,7 @@ contract DeployInvestment is Script {
         uint256 rangeKm
     ) internal {
         uint256 id = nft.mintTricycle(to, TricycleNFT.Meta(vehicleId, make, model, isEV, priceUsd, rangeKm));
-        inv.openPool(id, 1e6, priceUsd); // 1 USDC/share, priceUsd shares
+        // $20 per share → totalShares = priceUsd / 20 (2500→125, 2800→140).
+        inv.openPool(id, 20e6, priceUsd / 20);
     }
 }

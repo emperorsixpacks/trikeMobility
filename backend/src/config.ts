@@ -22,9 +22,9 @@ export const config = {
 
   // --- Investment / fractional ownership (Robinhood testnet) ---
   tricycleNftAddress: (process.env.TRICYCLE_NFT_ADDRESS ??
-    "0xB590BA8f1319924a29535c9B985E5f5afC80a710") as `0x${string}`,
+    "0x64b84997414F7Bb301B5e6A2E228066e27C7EDd0") as `0x${string}`,
   investmentAddress: (process.env.INVESTMENT_ADDRESS ??
-    "0x250f1df17DA6d626BBcDB5B73c079e50B7CA0597") as `0x${string}`,
+    "0xBBE7ECa80d91e26E24A9f498B15239a5D975542B") as `0x${string}`,
 
   // --- Paycrest treasury-bridge (real ₦ <-> real USDC on Arbitrum One mainnet) ---
   arbitrumRpcUrl: process.env.ARBITRUM_RPC_URL ?? "https://arb1.arbitrum.io/rpc",

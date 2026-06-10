@@ -12,7 +12,7 @@ import {
 
 export default function InvestmentApp() {
   const navigate = useNavigate();
-  const [qty, setQty] = useState(10);
+  const [qty, setQty] = useState(1);
   const [activeThumb, setActiveThumb] = useState(0);
   const [success, setSuccess] = useState<InvestResult | null>(null);
 
@@ -100,7 +100,7 @@ export default function InvestmentApp() {
               variant="ghost"
               onClick={() => {
                 setSuccess(null);
-                setQty(10);
+                setQty(1);
               }}
               className="w-full h-12 text-[#01C259] hover:bg-[#E9F8EE] rounded-2xl cursor-pointer"
             >
@@ -219,7 +219,7 @@ export default function InvestmentApp() {
                       type="button"
                       onClick={() => {
                         setActiveThumb(i);
-                        setQty(10);
+                        setQty(1);
                         setPurchaseError(null);
                       }}
                       className={`w-16 h-16 shrink-0 rounded-2xl bg-white p-1 flex items-center justify-center transition-all cursor-pointer ${
