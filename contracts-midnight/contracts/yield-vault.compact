@@ -1,0 +1,46 @@
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+// ============================================================================
+// 3rike Private Yield Vault — Shielded ERC-4626 Equivalent on Midnight
+// ============================================================================
+
+export ledger totalAssets: Uint<64>;
+export ledger totalShares: Uint<64>;
+export ledger sharePrice: Uint<64>;
+export ledger shareCommitments: Set<Bytes<32>>;
+export ledger adminKey: Bytes<32>;
+
+constructor(adminSk: Bytes<32>) {
+  adminKey = disclose(persistentHash<Vector<2, Bytes<32>>>(
+    [pad(32, "midnight:3rike:vault:admin"), adminSk]
+  ));
+  totalAssets = 0;
+  totalShares = 0;
+  sharePrice = 1000000;
+}
+
+witness adminSecretKey(): Bytes<32>;
+witness depositCommitmentData(): Bytes<32>;
+
+export circuit deposit(): Bytes<32> {
+  const raw = depositCommitmentData();
+  const commitment = persistentHash<Vector<2, Bytes<32>>>(
+    [pad(32, "midnight:3rike:vault:deposit"), disclose(raw)]
+  );
+
+  assert(!shareCommitments.member(disclose(commitment)), "Duplicate deposit");
+
+  shareCommitments.insert(disclose(commitment));
+
+  return disclose(commitment);
+}
+
+export circuit proveOwnership(): Boolean {
+  const raw = depositCommitmentData();
+  const commitment = persistentHash<Vector<2, Bytes<32>>>(
+    [pad(32, "midnight:3rike:vault:deposit"), disclose(raw)]
+  );
+  return shareCommitments.member(disclose(commitment));
+}

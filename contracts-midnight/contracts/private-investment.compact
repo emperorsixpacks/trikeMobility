@@ -1,0 +1,90 @@
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+// ============================================================================
+// 3rike Private Investment — Shielded Fractional Ownership on Midnight
+//
+// Yield math happens client-side. Contract stores pool metadata and
+// investment commitments. No division or value mutation on-chain.
+// ============================================================================
+
+enum PoolState {
+  INACTIVE,
+  ACTIVE,
+  CLOSED
+}
+
+struct Pool {
+  totalShares: Uint<64>,
+  sharesSold: Uint<64>,
+  pricePerShare: Uint<64>,
+  state: PoolState
+}
+
+export ledger pools: Map<Uint<64>, Pool>;
+export ledger shareCommitments: Set<Bytes<32>>;
+export ledger adminKey: Bytes<32>;
+
+constructor(adminSk: Bytes<32>) {
+  adminKey = disclose(persistentHash<Vector<2, Bytes<32>>>(
+    [pad(32, "midnight:3rike:invest:admin"), adminSk]
+  ));
+}
+
+witness adminSecretKey(): Bytes<32>;
+witness shareCommitmentData(): Bytes<32>;
+
+export circuit openPool(
+  tricycleId: Uint<64>,
+  totalShares: Uint<64>,
+  pricePerShare: Uint<64>
+): [] {
+  const sk = adminSecretKey();
+  const computedAdmin = persistentHash<Vector<2, Bytes<32>>>(
+    [pad(32, "midnight:3rike:invest:admin"), disclose(sk)]
+  );
+  assert(computedAdmin == adminKey, "Not authorized");
+
+  const tid = disclose(tricycleId);
+  assert(!pools.member(tid), "Pool already exists");
+
+  pools.insert(tid, Pool {
+    totalShares: disclose(totalShares),
+    sharesSold: 0,
+    pricePerShare: disclose(pricePerShare),
+    state: PoolState.ACTIVE
+  });
+}
+
+export circuit invest(tricycleId: Uint<64>): Bytes<32> {
+  const tid = disclose(tricycleId);
+  assert(pools.member(tid), "Pool not found");
+  const pool = pools.lookup(tid);
+  assert(pool.state == PoolState.ACTIVE, "Pool not active");
+
+  const raw = shareCommitmentData();
+  const commitment = persistentHash<Vector<2, Bytes<32>>>(
+    [pad(32, "midnight:3rike:invest:share"), disclose(raw)]
+  );
+
+  assert(!shareCommitments.member(disclose(commitment)), "Duplicate");
+
+  pools.insert(tid, Pool {
+    totalShares: pool.totalShares,
+    sharesSold: (pool.sharesSold + 1) as Uint<64>,
+    pricePerShare: pool.pricePerShare,
+    state: pool.state
+  });
+  shareCommitments.insert(disclose(commitment));
+
+  return disclose(commitment);
+}
+
+export circuit proveOwnership(tricycleId: Uint<64>): Boolean {
+  const raw = shareCommitmentData();
+  const commitment = persistentHash<Vector<2, Bytes<32>>>(
+    [pad(32, "midnight:3rike:invest:share"), disclose(raw)]
+  );
+  return shareCommitments.member(disclose(commitment));
+}
