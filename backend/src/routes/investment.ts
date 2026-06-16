@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
 import { requireAuth, type AuthedRequest } from "../middleware/auth.js";
-import { prisma } from "../db.js";
 import {
   listTricycles,
   getTricycle,
@@ -14,7 +13,6 @@ import {
 
 const router = Router();
 
-// Translate domain errors into HTTP responses; log the unexpected ones.
 function fail(res: import("express").Response, err: unknown) {
   if (err instanceof InvestmentError) {
     return res.status(err.status).json({ error: err.code });
@@ -42,12 +40,10 @@ router.get("/tricycles/:id", async (req, res) => {
   }
 });
 
-// An investor's live portfolio (holdings + pending yield), read from chain.
+// Portfolio — on Midnight, reads from DB since balances are private.
 router.get("/portfolio", requireAuth, async (req: AuthedRequest, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.userId! } });
-    if (!user) return res.status(404).json({ error: "not_found" });
-    res.json(await getPortfolio(user.walletAddress as `0x${string}`));
+    res.json(await getPortfolio(req.userId!));
   } catch (err) {
     fail(res, err);
   }

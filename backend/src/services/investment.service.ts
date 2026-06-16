@@ -1,25 +1,16 @@
-// Investment domain service. Combines on-chain truth (TricycleNFT +
-// FractionalInvestment) with off-chain catalog enrichment and a DB activity
-// log. Routes stay thin: they validate input and call into here.
+// Investment domain service — Midnight version.
+// Combines Midnight on-chain truth (private commitments) with off-chain
+// catalog enrichment and a DB activity log.
 
-import { formatUnits } from "viem";
 import { prisma } from "../db.js";
 import { catalogFor, aprFor } from "../lib/catalog.js";
-import { explorerTx } from "../lib/chain.js";
-import { usdcBalanceRaw } from "../lib/chain.js";
 import {
   tricycleCount,
-  getTricycleMeta,
   getPool,
-  sharesOf,
-  pendingYieldRaw,
   invest as chainInvest,
   claimYield as chainClaim,
   type OnchainPool,
-} from "../lib/investment.js";
-
-const USDC_DP = 6;
-const money = (raw: bigint) => formatUnits(raw, USDC_DP);
+} from "../lib/midnight-investment.js";
 
 export class InvestmentError extends Error {
   constructor(public code: string, public status = 400) {
@@ -34,35 +25,27 @@ export class InvestmentError extends Error {
 export interface TricycleView {
   id: number;
   vehicleId: string;
-  make: string;
-  model: string;
-  isEV: boolean;
-  priceUsd: number;
-  rangeKm: number;
   image: string;
   location: string;
   description: string;
-  projectedApr: number; // derived from the rider repayment model
-  weeklyRepayment: number; // USD the rider pays per week
-  pricePerShare: string; // USDC
+  projectedApr: number;
+  weeklyRepayment: number;
+  pricePerShare: string;
   totalShares: number;
   sharesSold: number;
   sharesAvailable: number;
-  fundedPct: number; // 0..100
+  fundedPct: number;
   active: boolean;
 }
 
 export interface HoldingView {
   id: number;
   vehicleId: string;
-  make: string;
-  model: string;
   image: string;
   shares: number;
-  ownershipPct: number; // of the whole tricycle
   valueUsdc: string;
   pendingYield: string;
-  projectedApr: number; // indicative annual yield %, for earnings estimates
+  projectedApr: number;
 }
 
 export interface PortfolioView {
@@ -78,21 +61,21 @@ export interface PortfolioView {
 // Reads
 // ---------------------------------------------------------------------------
 
-function toTricycleView(
-  meta: Awaited<ReturnType<typeof getTricycleMeta>>,
-  pool: OnchainPool,
-): TricycleView {
-  const cat = catalogFor(meta.vehicleId);
+function toTricycleView(id: number, pool: OnchainPool): TricycleView {
+  const vehicleId = `TRK-${String(id).padStart(3, "0")}`;
+  const cat = catalogFor(vehicleId);
   const total = Number(pool.totalShares);
   const sold = Number(pool.sharesSold);
+
   return {
-    ...meta,
+    id,
+    vehicleId,
     image: cat.image,
     location: cat.location,
     description: cat.description,
-    projectedApr: aprFor(meta.vehicleId, meta.priceUsd),
+    projectedApr: aprFor(vehicleId, Number(pool.pricePerShareRaw)),
     weeklyRepayment: cat.weeklyRepayment,
-    pricePerShare: money(pool.pricePerShareRaw),
+    pricePerShare: String(pool.pricePerShareRaw),
     totalShares: total,
     sharesSold: sold,
     sharesAvailable: total - sold,
@@ -101,74 +84,71 @@ function toTricycleView(
   };
 }
 
-/** All tricycles open for investment (and their live pool state). */
+/** All tricycles open for investment (from on-chain pool state). */
 export async function listTricycles(): Promise<TricycleView[]> {
   const count = await tricycleCount();
-  const ids = Array.from({ length: Math.max(0, count) }, (_, i) => i + 1);
+  if (count === 0) return [];
+
+  const ids = Array.from({ length: count }, (_, i) => i + 1);
   const views = await Promise.all(
     ids.map(async (id) => {
-      const [meta, pool] = await Promise.all([getTricycleMeta(id), getPool(id)]);
-      return toTricycleView(meta, pool);
+      const pool = await getPool(id);
+      return toTricycleView(id, pool);
     }),
   );
-  // Only surface tricycles that actually have an open pool.
   return views.filter((v) => v.active || v.sharesSold > 0);
 }
 
 export async function getTricycle(id: number): Promise<TricycleView> {
   if (id < 1) throw new InvestmentError("not_found", 404);
-  const count = await tricycleCount();
-  if (id > count) throw new InvestmentError("not_found", 404);
-  const [meta, pool] = await Promise.all([getTricycleMeta(id), getPool(id)]);
-  return toTricycleView(meta, pool);
+  const pool = await getPool(id);
+  return toTricycleView(id, pool);
 }
 
-/** An investor's full fractional-ownership portfolio, read live from chain. */
-export async function getPortfolio(address: `0x${string}`): Promise<PortfolioView> {
-  const count = await tricycleCount();
-  const ids = Array.from({ length: Math.max(0, count) }, (_, i) => i + 1);
+/**
+ * Investor portfolio — on Midnight, this reads from the DB investment log
+ * since on-chain balances are private. The ZK commitment proves authenticity.
+ */
+export async function getPortfolio(userId: number): Promise<PortfolioView> {
+  const investments = await prisma.investment.findMany({
+    where: { userId, action: "invest" },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Group investments by tricycle
+  const byTricycle = new Map<number, { shares: number; investedUsdc: number }>();
+  for (const inv of investments) {
+    const existing = byTricycle.get(inv.tricycleId) ?? { shares: 0, investedUsdc: 0 };
+    existing.shares += Number(inv.shares ?? 0);
+    existing.investedUsdc += parseFloat(inv.amountUsdc);
+    byTricycle.set(inv.tricycleId, existing);
+  }
 
   const holdings: HoldingView[] = [];
-  let investedRaw = 0n;
-  let yieldRaw = 0n;
+  let totalInvested = 0;
+  let totalYield = 0;
 
-  await Promise.all(
-    ids.map(async (id) => {
-      const shares = await sharesOf(id, address);
-      if (shares === 0n) return;
-      const [meta, pool, pending] = await Promise.all([
-        getTricycleMeta(id),
-        getPool(id),
-        pendingYieldRaw(id, address),
-      ]);
-      const cat = catalogFor(meta.vehicleId);
-      const valueRaw = shares * pool.pricePerShareRaw;
-      investedRaw += valueRaw;
-      yieldRaw += pending;
-      holdings.push({
-        id,
-        vehicleId: meta.vehicleId,
-        make: meta.make,
-        model: meta.model,
-        image: cat.image,
-        shares: Number(shares),
-        ownershipPct:
-          pool.totalShares === 0n
-            ? 0
-            : Math.round((Number(shares) / Number(pool.totalShares)) * 10000) / 100,
-        valueUsdc: money(valueRaw),
-        pendingYield: money(pending),
-        projectedApr: aprFor(meta.vehicleId, meta.priceUsd),
-      });
-    }),
-  );
+  for (const [tricycleId, data] of byTricycle) {
+    const vehicleId = `TRK-${String(tricycleId).padStart(3, "0")}`;
+    const cat = catalogFor(vehicleId);
+    holdings.push({
+      id: tricycleId,
+      vehicleId,
+      image: cat.image,
+      shares: data.shares,
+      valueUsdc: String(data.investedUsdc),
+      pendingYield: "0", // Private — computed client-side
+      projectedApr: aprFor(vehicleId, data.investedUsdc),
+    });
+    totalInvested += data.investedUsdc;
+  }
 
   holdings.sort((a, b) => a.id - b.id);
   return {
     holdings,
     totals: {
-      investedValueUsdc: money(investedRaw),
-      pendingYieldUsdc: money(yieldRaw),
+      investedValueUsdc: String(totalInvested),
+      pendingYieldUsdc: String(totalYield),
       tricycles: holdings.length,
     },
   };
@@ -189,45 +169,44 @@ export async function buyShares(userId: number, tricycleId: number, shares: numb
     throw new InvestmentError("invalid_shares");
   }
   const user = await loadUser(userId);
-  const [meta, pool] = await Promise.all([
-    getTricycleMeta(tricycleId).catch(() => {
-      throw new InvestmentError("not_found", 404);
-    }),
-    getPool(tricycleId),
-  ]);
 
+  const pool = await getPool(tricycleId).catch(() => {
+    throw new InvestmentError("not_found", 404);
+  });
   if (!pool.active) throw new InvestmentError("pool_closed");
+
   const available = pool.totalShares - pool.sharesSold;
   if (BigInt(shares) > available) throw new InvestmentError("not_enough_shares");
 
-  const costRaw = BigInt(shares) * pool.pricePerShareRaw;
-  const balance = await usdcBalanceRaw(user.walletAddress as `0x${string}`);
-  if (balance < costRaw) throw new InvestmentError("insufficient_funds");
-
-  const { txHash } = await chainInvest(user.encryptedKey, tricycleId, BigInt(shares));
+  const result = await chainInvest(user.encryptedKey, tricycleId, BigInt(shares));
 
   await prisma.investment.create({
     data: {
       userId,
       tricycleId,
-      vehicleId: meta.vehicleId,
+      vehicleId: `TRK-${String(tricycleId).padStart(3, "0")}`,
       action: "invest",
       shares: String(shares),
-      amountUsdc: money(costRaw),
-      txHash,
+      amountUsdc: "0", // Private on Midnight
+      txHash: result.commitment,
     },
   });
 
-  return { txHash, explorer: explorerTx(txHash), costUsdc: money(costRaw), shares };
+  return {
+    commitment: result.commitment,
+    shares,
+    message: "Investment recorded via Midnight ZK commitment",
+  };
 }
 
 export async function claim(userId: number, tricycleId: number) {
   const user = await loadUser(userId);
-  const address = user.walletAddress as `0x${string}`;
-  const pending = await pendingYieldRaw(tricycleId, address);
-  if (pending === 0n) throw new InvestmentError("nothing_to_claim");
 
-  const meta = await getTricycleMeta(tricycleId);
+  const meta = await prisma.investment.findFirst({
+    where: { userId, tricycleId, action: "invest" },
+  });
+  if (!meta) throw new InvestmentError("nothing_to_claim");
+
   const txHash = await chainClaim(user.encryptedKey, tricycleId);
 
   await prisma.investment.create({
@@ -236,15 +215,17 @@ export async function claim(userId: number, tricycleId: number) {
       tricycleId,
       vehicleId: meta.vehicleId,
       action: "claim",
-      amountUsdc: money(pending),
+      amountUsdc: "0", // Private on Midnight
       txHash,
     },
   });
 
-  return { txHash, explorer: explorerTx(txHash), amountUsdc: money(pending) };
+  return {
+    message: "Yield claimed via Midnight ZK proof (amount is private)",
+  };
 }
 
-/** Recent investment activity for the user (receipts / feed). */
+/** Recent investment activity for the user. */
 export async function activity(userId: number) {
   return prisma.investment.findMany({
     where: { userId },

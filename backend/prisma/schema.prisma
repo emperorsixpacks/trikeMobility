@@ -1,6 +1,5 @@
-// Prisma schema for the 3rike backend.
-// Local dev uses SQLite for zero-setup; switch `provider` to "postgresql" for
-// Railway (and point DATABASE_URL at the Postgres instance).
+// Prisma schema for 3rike backend — Midnight privacy-first version.
+// Local dev uses SQLite; switch `provider` to "postgresql" for production.
 
 generator client {
   provider = "prisma-client-js"
@@ -22,9 +21,16 @@ model User {
   country       String?
   address       String?
   pinHash       String?  // hashed 4-digit payment PIN
-  // Embedded EVM wallet auto-created on signup.
-  walletAddress String   @unique
-  encryptedKey  String   // AES-256-GCM encrypted private key
+
+  // Embedded Midnight wallet — auto-created on signup.
+  // On Midnight, the "wallet address" is derived from the seed (not a public key).
+  walletAddress String   @unique  // Midnight address (derived from seed)
+  encryptedKey  String            // AES-256-GCM encrypted Midnight seed
+
+  // KYC commitment hash (on Midnight UserRegistry contract).
+  // The raw KYC data never touches the server — only the commitment.
+  kycCommitment String?
+
   createdAt     DateTime @default(now())
 
   deposits      Deposit[]
@@ -38,8 +44,9 @@ model Deposit {
   user      User     @relation(fields: [userId], references: [id])
   userId    Int
   kind      String   // crypto | bank
-  amountUsdc String  // decimal string (6dp)
-  txHash    String?
+  amountUsdc String  // decimal string (6dp) — private on Midnight
+  commitment String? // Midnight ZK commitment hash (replaces txHash for crypto)
+  txHash    String?  // Legacy EVM tx hash (for Paycrest bridge only)
   status    String   @default("confirmed") // pending | confirmed | failed
   createdAt DateTime @default(now())
 }
@@ -59,18 +66,18 @@ model PaymentOrder {
   createdAt  DateTime @default(now())
 }
 
-// History of fractional-investment actions. Ownership + yield live on-chain
-// (source of truth); this is a fast, queryable log for receipts and activity
-// feeds without scanning event logs.
+// Fractional-investment actions — now uses Midnight ZK commitments.
+// Ownership + yield are private on Midnight; this is the queryable log.
 model Investment {
   id          Int      @id @default(autoincrement())
   user        User     @relation(fields: [userId], references: [id])
   userId      Int
-  tricycleId  Int      // on-chain TricycleNFT tokenId
-  vehicleId   String   // human fleet id (e.g. RDB-001) at time of action
+  tricycleId  Int      // tricycle pool id
+  vehicleId   String   // human fleet id (e.g. TRK-001) at time of action
   action      String   // invest | claim
-  shares      String?  // shares bought (invest only)
-  amountUsdc  String   // cost (invest) or yield claimed (claim), decimal 6dp
-  txHash      String
+  shares      String?  // shares bought (invest only) — private on Midnight
+  amountUsdc  String   // "0" on Midnight (amount is private)
+  commitment  String?  // Midnight ZK commitment hash (replaces txHash)
+  txHash      String   // commitment hash or legacy tx hash
   createdAt   DateTime @default(now())
 }

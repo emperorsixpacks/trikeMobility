@@ -48,7 +48,7 @@ function tokenFor(userId: number): string {
   return jwt.sign({ uid: userId }, config.jwtSecret, { expiresIn: "7d" });
 }
 
-// Register: creates the user AND auto-provisions an embedded EVM wallet.
+// Register: creates the user AND auto-provisions an embedded Midnight wallet.
 router.post("/register", async (req, res) => {
   const parsed = credentials.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "invalid_input" });
