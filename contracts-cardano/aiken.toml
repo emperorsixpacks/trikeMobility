@@ -1,0 +1,10 @@
+name = "3rike-tricycle-nft"
+version = "0.1.0"
+description = "TricycleNFT for 3rike Mobility — Cardano Preprod testnet"
+license = "MIT"
+
+[environment]
+crypto = false
+
+[context]
+plutus_version = "plutus-v3"
