@@ -19,7 +19,7 @@ app.use(
 );
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, chainId: config.chainId });
+  res.json({ ok: true, network: "midnight-preprod" });
 });
 
 app.use("/auth", authRoutes);
@@ -28,5 +28,5 @@ app.use("/payments", paycrestRoutes);
 app.use("/investment", investmentRoutes);
 
 app.listen(config.port, () => {
-  console.log(`3rike backend listening on :${config.port} (chain ${config.chainId})`);
+  console.log(`3rike backend listening on :${config.port} (Midnight Preprod + Cardano Preprod)`);
 });
