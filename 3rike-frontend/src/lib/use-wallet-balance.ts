@@ -1,13 +1,12 @@
-// Fetches the current user's live USDC balance on Robinhood Chain (wallet +
-// yield vault). Every authenticated user has an embedded wallet, so this
-// always fetches once a user is present.
+// Fetches the current user's Midnight wallet status.
+// On Midnight, balances are private — we show DB-tracked totals instead.
 
 import { useCallback, useEffect, useState } from "react";
-import { ApiError, getEvmBalance, type EvmBalance } from "./api";
+import { ApiError, getMidnightBalance, type MidnightBalance } from "./api";
 import { useAuth } from "./auth";
 
 type State = {
-  balance: EvmBalance | null;
+  balance: MidnightBalance | null;
   loading: boolean;
   error: ApiError | null;
 };
@@ -28,7 +27,7 @@ export function useWalletBalance() {
     }
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const data = await getEvmBalance();
+      const data = await getMidnightBalance();
       setState({ balance: data, loading: false, error: null });
     } catch (err) {
       setState({

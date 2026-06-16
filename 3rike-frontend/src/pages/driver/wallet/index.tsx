@@ -6,7 +6,6 @@ import {
   Check,
   ChevronLeft,
   Copy,
-  ExternalLink,
   Lock,
   RefreshCw,
 } from "lucide-react";
@@ -94,11 +93,11 @@ export default function Wallet() {
               <Skeleton className="h-10 w-48 bg-white/20" />
             ) : (
               <h1 className="text-4xl font-bold mb-1">
-                $ {formatUSDC(balance?.totalUsdc)}{" "}
+                $ {formatUSDC(balance?.totalInvestedUsdc)}{" "}
                 <span className="text-sm font-light text-white/80 align-middle">USDC</span>
               </h1>
             )}
-            <p className="text-[11px] text-white/70 mt-2">Robinhood Chain · live on-chain balance</p>
+            <p className="text-xs text-white/70 mt-2">Midnight Network · privacy-enabled wallet</p>
           </div>
         </div>
 
@@ -114,27 +113,27 @@ export default function Wallet() {
           </p>
         )}
 
-        {/* Breakdown */}
+        {/* Privacy-enabled balance card */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-white border border-gray-100 rounded-2xl p-4">
-            <p className="text-[10px] text-[#909090] uppercase tracking-wider mb-1">Spendable</p>
-            <p className="text-base font-bold text-gray-900">{formatUSDC(balance?.walletUsdc)}</p>
-            <p className="text-[10px] text-[#909090] mt-0.5">In wallet</p>
+            <p className="text-[10px] text-[#909090] uppercase tracking-wider mb-1">Invested</p>
+            <p className="text-base font-bold text-gray-900">${formatUSDC(balance?.totalInvestedUsdc)}</p>
+            <p className="text-[10px] text-[#909090] mt-0.5">Total deployed</p>
           </div>
           <div className="bg-white border border-gray-100 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-1">
               <Lock className="w-3.5 h-3.5 text-[#909090]" />
-              <p className="text-[10px] text-[#909090] uppercase tracking-wider">Saved</p>
+              <p className="text-[10px] text-[#909090] uppercase tracking-wider">Private</p>
             </div>
-            <p className="text-base font-bold text-gray-900">{formatUSDC(balance?.vaultUsdc)}</p>
-            <p className="text-[10px] text-[#909090] mt-0.5">Earning yield</p>
+            <p className="text-base font-bold text-gray-900">{balance?.investmentCount ?? 0}</p>
+            <p className="text-[10px] text-[#909090] mt-0.5">Investments</p>
           </div>
         </div>
 
         {/* Wallet address */}
         <div className="bg-[#F8FAFC] rounded-2xl p-4 mb-4">
           <p className="text-[10px] text-[#909090] uppercase tracking-wider mb-2">
-            Your wallet address
+            Your Midnight address
           </p>
           <div className="flex items-center gap-2">
             <code className="flex-1 text-[12px] text-gray-700 font-mono truncate">{short}</code>
@@ -150,17 +149,10 @@ export default function Wallet() {
                 <><Copy className="w-3 h-3" /> Copy</>
               )}
             </button>
-            {balance?.explorer && (
-              <a
-                href={balance.explorer}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 text-[11px] font-medium text-gray-600 hover:bg-gray-50"
-              >
-                <ExternalLink className="w-3 h-3" /> View
-              </a>
-            )}
           </div>
+          <p className="text-[10px] text-[#909090] mt-2">
+            Privacy-enabled: balances and transactions are shielded via ZK proofs
+          </p>
         </div>
 
         {/* Deposit CTA */}

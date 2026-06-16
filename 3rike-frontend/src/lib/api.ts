@@ -114,7 +114,7 @@ export type User = {
   address?: string;
   /** Whether a payment PIN has been set. */
   hasPin?: boolean;
-  /** Embedded EVM wallet auto-created on signup. */
+  /** Midnight wallet address (derived from seed, not a public key). */
   walletAddress?: string;
   /** Legacy Canton field — retained optional for back-compat with old screens. */
   canton_party_id?: string;
@@ -153,40 +153,39 @@ export function login(payload: {
 }
 
 // =============================================================================
-// EVM wallet (Robinhood Chain) — live balances + crypto deposit
+// Midnight wallet — privacy-preserving balance
 // =============================================================================
 
-export type EvmBalance = {
+export type MidnightBalance = {
   address: string;
-  explorer: string;
-  /** Spendable USDC sitting in the wallet (decimal string, 6dp). */
-  walletUsdc: string;
-  /** USDC value held in the yield vault. */
-  vaultUsdc: string;
-  /** wallet + vault. */
-  totalUsdc: string;
+  /** Total amount invested (from DB — on-chain amounts are private). */
+  totalInvestedUsdc: string;
+  /** Number of investments made. */
+  investmentCount: number;
+  /** Whether Midnight privacy is enabled. */
+  privacyEnabled: boolean;
 };
 
-export function getEvmBalance(): Promise<EvmBalance> {
-  return request<EvmBalance>("/wallet/balance");
+export function getMidnightBalance(): Promise<MidnightBalance> {
+  return request<MidnightBalance>("/wallet/balance");
 }
 
-/** Credit USDC to the user's wallet on-chain (crypto deposit). */
+/** Credit USDC to the user's wallet (Midnight ZK commitment). */
 export function cryptoDeposit(
   amountUsdc: string,
-): Promise<{ txHash: string; explorer: string }> {
+): Promise<{ message: string; amountUsdc: string }> {
   return request("/wallet/dev-fund", {
     method: "POST",
     body: JSON.stringify({ amountUsdc }),
   });
 }
 
-/** Withdraw USDC from the user's wallet to an external address (crypto-out). */
+/** Withdraw USDC from the user's wallet (Midnight ZK commitment). */
 export function withdrawCrypto(payload: {
   to: string;
   amountUsdc: string;
   pin: string;
-}): Promise<{ txHash: string; explorer: string }> {
+}): Promise<{ message: string; amountUsdc: string }> {
   return request("/wallet/withdraw-crypto", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -437,21 +436,16 @@ export function getInvestor(id: number): Promise<Investor> {
 export type Tricycle = {
   id: number;
   vehicleId: string;
-  make: string;
-  model: string;
-  isEV: boolean;
-  priceUsd: number;
-  rangeKm: number;
   image: string;
   location: string;
   description: string;
   projectedApr: number;
-  weeklyRepayment: number; // USD the rider pays per week
-  pricePerShare: string; // USDC, decimal string
+  weeklyRepayment: number;
+  pricePerShare: string;
   totalShares: number;
   sharesSold: number;
   sharesAvailable: number;
-  fundedPct: number; // 0..100
+  fundedPct: number;
   active: boolean;
 };
 
@@ -465,16 +459,14 @@ export function getTricycle(id: number): Promise<Tricycle> {
 }
 
 export type InvestResult = {
-  txHash: string;
-  explorer: string;
-  costUsdc: string;
+  commitment: string;
   shares: number;
+  message: string;
 };
 
 /**
- * Buy `shares` fractions of a tricycle. Moves real USDC from the user's
- * embedded wallet on-chain (gas sponsored by the platform) and mints
- * ERC-1155 shares to them.
+ * Buy `shares` fractions of a tricycle. On Midnight, this generates a ZK
+ * commitment — the amount and investor identity stay private.
  */
 export function invest(payload: {
   tricycleId: number;
@@ -489,14 +481,11 @@ export function invest(payload: {
 export type Holding = {
   id: number;
   vehicleId: string;
-  make: string;
-  model: string;
   image: string;
   shares: number;
-  ownershipPct: number;
   valueUsdc: string;
   pendingYield: string;
-  projectedApr: number; // indicative annual yield %
+  projectedApr: number;
 };
 
 export type Portfolio = {
@@ -513,9 +502,7 @@ export function getPortfolio(): Promise<Portfolio> {
 }
 
 export type ClaimResult = {
-  txHash: string;
-  explorer: string;
-  amountUsdc: string;
+  message: string;
 };
 
 export function claimYield(tricycleId: number): Promise<ClaimResult> {

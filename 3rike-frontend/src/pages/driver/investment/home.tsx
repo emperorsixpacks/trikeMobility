@@ -79,16 +79,11 @@ export default function InvestmentApp() {
           />
           <h2 className="text-2xl font-extrabold text-black mb-2">Investment confirmed!</h2>
           <p className="text-sm text-[#909090] mb-1">
-            You bought {success.shares} {success.shares === 1 ? "share" : "shares"} for ${success.costUsdc}
+            You bought {success.shares} {success.shares === 1 ? "share" : "share"} — recorded via ZK proof
           </p>
-          <a
-            href={success.explorer}
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs text-[#01C259] hover:underline mb-8 break-all"
-          >
-            View transaction ↗
-          </a>
+          <p className="text-xs text-[#909090] mb-8">
+            {success.message}
+          </p>
           <div className="flex flex-col gap-3 w-full">
             <Button
               onClick={() => navigate("/driver/investment/portfolio")}
@@ -168,12 +163,12 @@ export default function InvestmentApp() {
               {/* Hero card */}
               <div className="relative w-full bg-[#F2FBF5] rounded-3xl overflow-hidden aspect-square flex items-center justify-center mb-4">
                 <img
-                  src={selected.isEV ? "/small-tricycle2.svg" : "/yellow-tricycle.svg"}
-                  alt={`${selected.make} ${selected.model}`}
+                  src="/small-tricycle2.svg"
+                  alt={`3rike ${selected.vehicleId}`}
                   className="w-[85%] h-[85%] object-contain"
                 />
                 <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-white/90 text-[10px] font-medium text-gray-700">
-                  {selected.make} {selected.model} {selected.isEV && "• EV"}
+                  {selected.vehicleId} • EV
                 </div>
                 <div className="absolute top-3 right-3 px-2 py-1 rounded-full bg-[#01C259] text-[10px] font-semibold text-white flex items-center gap-1">
                   <TrendingUp className="w-3 h-3" /> {selected.projectedApr}% APR
@@ -184,7 +179,7 @@ export default function InvestmentApp() {
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="text-lg font-bold text-gray-900">
-                    {selected.make} {selected.model}
+                    {selected.vehicleId}
                   </h2>
                   <span className="text-xs text-[#909090] flex items-center gap-1">
                     <MapPin className="w-3 h-3" /> {selected.location}
@@ -229,8 +224,8 @@ export default function InvestmentApp() {
                       }`}
                     >
                       <img
-                        src={t.isEV ? "/small-tricycle2.svg" : "/yellow-tricycle.svg"}
-                        alt={`${t.make}-${t.id}`}
+                        src="/small-tricycle2.svg"
+                        alt={`tricycle-${t.id}`}
                         className="w-full h-full object-contain"
                       />
                     </button>

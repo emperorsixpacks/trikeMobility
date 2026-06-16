@@ -41,8 +41,8 @@ export default function InvestmentPortfolio() {
     setClaiming(tricycleId);
     setToast(null);
     try {
-      const res = await claimYield(tricycleId);
-      setToast(`Claimed $${res.amountUsdc} USDC to your wallet`);
+      await claimYield(tricycleId);
+      setToast(`Yield claimed — amount is private (Midnight ZK proof)`);
       await load();
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "";
@@ -180,10 +180,10 @@ export default function InvestmentPortfolio() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-900 truncate">
-                      {h.make} {h.model}
+                      {h.vehicleId}
                     </p>
                     <p className="text-xs text-[#909090]">
-                      {h.shares} {h.shares === 1 ? "share" : "shares"} · {h.ownershipPct}% owned
+                      {h.shares} {h.shares === 1 ? "share" : "shares"} · ZK shielded
                     </p>
                   </div>
                   <div className="text-right shrink-0">

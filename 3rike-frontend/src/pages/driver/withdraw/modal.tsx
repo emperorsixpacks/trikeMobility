@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowUpRight, Check, ChevronRight, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     ApiError,
@@ -23,7 +23,7 @@ type Mode = "crypto" | "bank";
 
 export default function WithdrawModal({ isOpen, onClose, onWithdrawn }: WithdrawModalProps) {
     const { balance, refresh } = useWalletBalance();
-    const spendable = Number(balance?.walletUsdc ?? 0);
+    const spendable = Number(balance?.totalInvestedUsdc ?? 0);
 
     const [isVisible, setIsVisible] = useState(false);
     const [view, setView] = useState<View>("menu");
@@ -35,7 +35,7 @@ export default function WithdrawModal({ isOpen, onClose, onWithdrawn }: Withdraw
     // crypto
     const [to, setTo] = useState("");
     const [amount, setAmount] = useState("");
-    const [lastTx, setLastTx] = useState<{ hash: string; explorer: string } | null>(null);
+    const [lastTx, setLastTx] = useState<{ message: string } | null>(null);
 
     // bank
     const [banks, setBanks] = useState<Bank[]>([]);
@@ -111,7 +111,7 @@ export default function WithdrawModal({ isOpen, onClose, onWithdrawn }: Withdraw
         try {
             if (mode === "crypto") {
                 const res = await withdrawCrypto({ to: to.trim(), amountUsdc: amount.trim(), pin: pinValue });
-                setLastTx({ hash: res.txHash, explorer: res.explorer });
+                setLastTx({ message: res.message });
             } else {
                 const res = await withdrawToBank({
                     amountUsdc: bankAmount.trim(),
@@ -251,7 +251,7 @@ export default function WithdrawModal({ isOpen, onClose, onWithdrawn }: Withdraw
             <p className="text-gray-400 text-sm max-w-xs leading-relaxed mb-4">
                 {mode === "crypto" ? `$${Number(amount || 0).toFixed(2)} USDC is on its way.` : `₦${ngn ? Number(ngn).toLocaleString() : ""} is on its way to ${accountName}.`}
             </p>
-            {mode === "crypto" && lastTx && <a href={lastTx.explorer} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#01C259] hover:underline mb-8 font-mono">{lastTx.hash.slice(0, 10)}… explorer <ExternalLink className="w-3 h-3" /></a>}
+            {mode === "crypto" && lastTx && <p className="text-xs text-gray-400 mb-8">{lastTx.message}</p>}
             <Button onClick={onClose} className="w-full h-14 bg-[#01C259] hover:bg-[#00a049] text-white font-medium text-base rounded-xl cursor-pointer">Done</Button>
         </div>
     );

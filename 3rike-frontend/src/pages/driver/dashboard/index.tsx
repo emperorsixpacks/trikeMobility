@@ -174,14 +174,14 @@ export default function DriverDashboard() {
                     <h1 className="text-4xl font-bold">
                       {showNgn && ngnRate != null ? (
                         <>
-                          ₦ {formatNgn(Number(walletBalance?.totalUsdc ?? 0) * ngnRate)}
+                          ₦ {formatNgn(Number(walletBalance?.totalInvestedUsdc ?? 0) * ngnRate)}
                           <span className="text-base font-light text-white/80 ml-1.5 align-middle">
                             NGN
                           </span>
                         </>
                       ) : (
                         <>
-                          $ {formatCC(walletBalance?.totalUsdc)}
+                          $ {formatCC(walletBalance?.totalInvestedUsdc)}
                           <span className="text-base font-light text-white/80 ml-1.5 align-middle">
                             USDC
                           </span>
