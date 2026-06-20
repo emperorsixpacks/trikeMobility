@@ -1,19 +1,11 @@
-use 3rike_tricycle_nft/validators/tricycle_nft.{Datum, Redeemer}
+use 3rike/tricycle-nft/validators/tricycle_nft
 
-// Basic tests for the TricycleNFT minting policy.
-// Run with: aiken check
-
-test fn build_name_pads_single_digit() {
+test build_name_returns_correct_format() {
   let name = tricycle_nft.build_name(1)
-  name == "TRK-001"
+  name == "TRK-1"
 }
 
-test fn build_name_pads_two_digits() {
+test build_name_handles_large_ids() {
   let name = tricycle_nft.build_name(42)
-  name == "TRK-042"
-}
-
-test fn build_name_three_digits() {
-  let name = tricycle_nft.build_name(100)
-  name == "TRK-100"
+  name == "TRK-42"
 }

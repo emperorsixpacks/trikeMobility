@@ -1,10 +1,18 @@
-name = "3rike-tricycle-nft"
+name = "3rike/tricycle-nft"
 version = "0.1.0"
-description = "TricycleNFT for 3rike Mobility — Cardano Preprod testnet"
+compiler = "v1.1.22"
+plutus = "v3"
 license = "MIT"
+description = "TricycleNFT for 3rike Mobility — Cardano Preprod testnet"
 
-[environment]
-crypto = false
+[repository]
+user = "3rike"
+project = "tricycle-nft"
+platform = "github"
 
-[context]
-plutus_version = "plutus-v3"
+[[dependencies]]
+name = "aiken-lang/stdlib"
+version = "v3.1.0"
+source = "github"
+
+[config]
