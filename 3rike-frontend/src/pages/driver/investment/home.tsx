@@ -30,7 +30,7 @@ export default function InvestmentApp() {
     return tricycles[Math.min(activeThumb, tricycles.length - 1)] ?? null;
   }, [tricycles, activeThumb]);
 
-  const unitPrice = selected ? Number(selected.pricePerShare) : 0;
+  const unitPrice = selected ? Math.round(Number(selected.pricePerShare)) : 0;
   const totalPrice = qty * unitPrice;
   const maxShares = selected?.sharesAvailable ?? 0;
 
@@ -200,7 +200,7 @@ export default function InvestmentApp() {
                   />
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-[#909090] mt-2">
-                  <span>${selected.pricePerShare} per share</span>
+                  <span>${unitPrice.toLocaleString()} per share</span>
                   <span>Rider pays ${selected.weeklyRepayment}/wk → your yield</span>
                 </div>
               </div>
@@ -283,7 +283,7 @@ export default function InvestmentApp() {
             <p className="text-center text-xs text-[#909090] mb-3">
               Projected earnings{" "}
               <span className="font-semibold text-[#01C259]">
-                ~${(totalPrice * (selected.projectedApr / 100)).toLocaleString(undefined, { maximumFractionDigits: 2 })}/yr
+                ~${Math.round(totalPrice * (selected.projectedApr / 100)).toLocaleString()}/yr
               </span>{" "}
               at {selected.projectedApr}% APR
             </p>
@@ -306,7 +306,7 @@ export default function InvestmentApp() {
                 ? "Processing…"
                 : !selected
                   ? "No tricycles available"
-                  : `Invest $${totalPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+                  : `Invest $${totalPrice.toLocaleString()}`}
             </Button>
           </div>
         </div>

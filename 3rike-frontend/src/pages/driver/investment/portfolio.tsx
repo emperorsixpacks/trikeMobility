@@ -65,7 +65,7 @@ export default function InvestmentPortfolio() {
     (sum, h) => sum + Number(h.valueUsdc) * (h.projectedApr / 100),
     0,
   );
-  const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  const fmt = (n: number) => Math.round(n).toLocaleString();
 
   return (
     <MobileFrame innerClassName="px-5 py-6 flex flex-col">
@@ -86,7 +86,7 @@ export default function InvestmentPortfolio() {
       <div className="bg-[#F2FBF5] rounded-2xl p-5 mb-6">
         <p className="text-xs text-[#909090] mb-1">Portfolio value</p>
         <p className="text-3xl font-bold text-gray-900 mb-3">
-          ${totals ? Number(totals.investedValueUsdc).toLocaleString(undefined, { maximumFractionDigits: 2 }) : "0"}
+          ${totals ? Math.round(Number(totals.investedValueUsdc)).toLocaleString() : "0"}
         </p>
         <div className="flex items-center justify-between text-xs text-[#909090]">
           <span>
@@ -188,7 +188,7 @@ export default function InvestmentPortfolio() {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-sm font-bold text-gray-900">
-                      ${Number(h.valueUsdc).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                      ${Math.round(Number(h.valueUsdc)).toLocaleString()}
                     </p>
                     <p className="text-[10px] text-[#909090]">value</p>
                   </div>

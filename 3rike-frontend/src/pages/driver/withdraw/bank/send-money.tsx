@@ -473,7 +473,7 @@ export default function WithdrawSendMoney() {
                         <div className="text-center mb-8">
                             <div className="flex items-center justify-center text-3xl font-extrabold text-black">
                                 <span className="text-gray-400 mr-1 font-light">₵</span>
-                                {parseFloat(transferData?.amount || "0").toFixed(2)}
+                                {Math.round(parseFloat(transferData?.amount || "0"))}
                             </div>
                         </div>
 
@@ -593,7 +593,7 @@ export default function WithdrawSendMoney() {
 
                         <div className="flex items-center text-3xl font-extrabold text-black mb-20">
                             <span className="text-gray-400 mr-1 font-light">₵</span>
-                            {parseFloat(transferData?.amount || "0").toFixed(2)}
+                            {Math.round(parseFloat(transferData?.amount || "0"))}
                         </div>
 
                         <Button

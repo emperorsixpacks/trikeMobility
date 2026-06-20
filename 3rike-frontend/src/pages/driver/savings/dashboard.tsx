@@ -10,10 +10,7 @@ export default function SavingsDashboard() {
     const navigate = useNavigate();
     const [changeCurrency, setChangeCurrency] = useState(true);
     const { balance } = useSavings();
-    const formattedBalance = balance.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
+    const formattedBalance = Math.round(balance).toLocaleString("en-US");
 
     const handleTargetSavings = () => {
         navigate('/driver/savings/target')

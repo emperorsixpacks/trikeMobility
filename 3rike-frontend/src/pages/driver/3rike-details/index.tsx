@@ -64,7 +64,7 @@ export default function ThreeDetails() {
   // Derived from real data when available; falls back to placeholders.
   const weeklyPayment = useMemo(() => {
     if (tricycle && Number(tricycle.pricePerShare) > 0) {
-      return Math.round((Number(tricycle.pricePerShare) / TOTAL_WEEKS) * 100) / 100;
+      return Math.round(Number(tricycle.pricePerShare) / TOTAL_WEEKS);
     }
     return 65;
   }, [tricycle]);
@@ -165,7 +165,7 @@ export default function ThreeDetails() {
               <p className="text-xs text-white/90">Weekly Payment</p>
               <div className="text-lg font-bold flex items-center">
                 <img src="/future-dolls.png" alt="dollar" />
-                <span>{weeklyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                <span>{weeklyPayment.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -231,7 +231,7 @@ export default function ThreeDetails() {
             <div>
               <p className="text-xs text-[#909090] mb-0.5">Total Paid</p>
               <p className="text-base font-bold text-[#01C259]">
-                ${totalPaid.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                ${totalPaid.toLocaleString()}
               </p>
             </div>
             <div className="text-right">
@@ -273,7 +273,7 @@ export default function ThreeDetails() {
                 Pay Week {nextWeekNumber}
               </h3>
               <p className="text-sm text-[#909090] text-center mb-6">
-                You're paying ${weeklyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC for{" "}
+                You're paying ${weeklyPayment.toLocaleString()} USDC for{" "}
                 <span className="font-medium text-gray-700">{plate}</span>.
               </p>
 

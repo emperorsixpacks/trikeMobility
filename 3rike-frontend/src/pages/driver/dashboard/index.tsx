@@ -467,10 +467,7 @@ function deriveStatus(
 }
 
 function formatBalance(usdc: number): string {
-  return usdc.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return Math.round(usdc).toLocaleString("en-US");
 }
 
 function greetingFor(now: Date): string {
@@ -490,10 +487,7 @@ function formatCC(raw?: string): string {
   if (!raw) return "—";
   const n = Number(raw);
   if (!Number.isFinite(n)) return raw;
-  return n.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return Math.round(n).toLocaleString();
 }
 
 // Naira equivalent — whole-naira with thousands separators (₦ rarely shows kobo).

@@ -174,7 +174,7 @@ export default function WithdrawModal({ isOpen, onClose, onWithdrawn }: Withdraw
             <Header title="Withdraw USDC" onBack={() => setView("menu")} />
             <div className="flex items-center justify-between mb-4 text-xs">
                 <span className="text-gray-400">Spendable</span>
-                <button type="button" onClick={() => setAmount(String(spendable))} className="font-medium text-[#01C259] cursor-pointer">${spendable.toFixed(2)} · Max</button>
+                <button type="button" onClick={() => setAmount(String(spendable))} className="font-medium text-[#01C259] cursor-pointer">${Math.round(spendable)} · Max</button>
             </div>
             <label className="text-xs text-gray-400 block mb-1.5">Destination address</label>
             <input value={to} onChange={(e) => setTo(e.target.value)} placeholder="0x…" spellCheck={false} className="w-full px-4 py-3 mb-4 rounded-xl border border-gray-200 bg-gray-50/50 outline-none focus:border-[#01C259] text-sm font-mono" />
@@ -193,7 +193,7 @@ export default function WithdrawModal({ isOpen, onClose, onWithdrawn }: Withdraw
             <Header title="Withdraw to bank" onBack={() => setView("menu")} />
             <div className="flex items-center justify-between mb-3 text-xs">
                 <span className="text-gray-400">Spendable</span>
-                <button type="button" onClick={() => setBankAmount(String(spendable))} className="font-medium text-[#01C259] cursor-pointer">${spendable.toFixed(2)} · Max</button>
+                <button type="button" onClick={() => setBankAmount(String(spendable))} className="font-medium text-[#01C259] cursor-pointer">${Math.round(spendable)} · Max</button>
             </div>
             <label className="text-xs text-gray-400 block mb-1.5">Bank</label>
             <select value={institution} onChange={(e) => setInstitution(e.target.value)} className="w-full px-4 py-3 mb-3 rounded-xl border border-gray-200 bg-gray-50/50 outline-none focus:border-[#01C259] text-sm">
@@ -228,7 +228,7 @@ export default function WithdrawModal({ isOpen, onClose, onWithdrawn }: Withdraw
         <div className="flex flex-col w-full animate-in slide-in-from-right-10 duration-300">
             <Header title="Enter your PIN" onBack={() => { setView(mode === "crypto" ? "crypto" : "bank"); setError(null); }} />
             <p className="text-gray-400 text-xs text-center mb-6">
-                {mode === "crypto" ? `Confirm withdrawal of $${Number(amount || 0).toFixed(2)}` : `Confirm ₦${ngn ? Number(ngn).toLocaleString() : ""} to ${accountName}`} with your PIN.
+                {mode === "crypto" ? `Confirm withdrawal of $${Math.round(Number(amount || 0))}` : `Confirm ₦${ngn ? Number(ngn).toLocaleString() : ""} to ${accountName}`} with your PIN.
             </p>
             <div className="flex justify-center gap-3 mb-2">
                 {[0, 1, 2, 3].map((i) => <div key={i} className="w-14 h-14 rounded-xl flex items-center justify-center bg-[#EBEBEB]">{pin.length > i && <div className="w-3 h-3 bg-black rounded-full" />}</div>)}
@@ -249,7 +249,7 @@ export default function WithdrawModal({ isOpen, onClose, onWithdrawn }: Withdraw
             <div className="w-20 h-20 rounded-full bg-[#01C259] flex items-center justify-center mb-6"><Check className="w-10 h-10 text-white" strokeWidth={3} /></div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">{mode === "crypto" ? "Withdrawal sent" : "Payout initiated"}</h2>
             <p className="text-gray-400 text-sm max-w-xs leading-relaxed mb-4">
-                {mode === "crypto" ? `$${Number(amount || 0).toFixed(2)} USDC is on its way.` : `₦${ngn ? Number(ngn).toLocaleString() : ""} is on its way to ${accountName}.`}
+                {mode === "crypto" ? `$${Math.round(Number(amount || 0))} USDC is on its way.` : `₦${ngn ? Number(ngn).toLocaleString() : ""} is on its way to ${accountName}.`}
             </p>
             {mode === "crypto" && lastTx && <p className="text-xs text-gray-400 mb-8">{lastTx.message}</p>}
             <Button onClick={onClose} className="w-full h-14 bg-[#01C259] hover:bg-[#00a049] text-white font-medium text-base rounded-xl cursor-pointer">Done</Button>

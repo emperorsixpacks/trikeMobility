@@ -186,13 +186,10 @@ export default function Wallet() {
 }
 
 function formatUSDC(raw?: string): string {
-  if (raw === undefined) return "0.00";
+  if (raw === undefined) return "0";
   const n = Number(raw);
-  if (!Number.isFinite(n)) return "0.00";
-  return n.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  if (!Number.isFinite(n)) return "0";
+  return Math.round(n).toLocaleString();
 }
 
 function messageFor(err: unknown): string {

@@ -120,7 +120,7 @@ export default function ActiveLoan() {
             <div className="relative z-10">
               <p className="text-xs text-white/80 mb-1">Remaining balance</p>
               <p className="text-3xl font-bold mb-3">
-                ${loan.remaining_usdc.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                ${Math.round(loan.remaining_usdc).toLocaleString()}
               </p>
               <div className="w-full h-2 rounded-full bg-white/20 overflow-hidden">
                 <div
@@ -129,7 +129,7 @@ export default function ActiveLoan() {
                 />
               </div>
               <p className="text-[11px] text-white/80 mt-2">
-                {progressPct.toFixed(0)}% repaid · ${(loan.principal_usdc - loan.remaining_usdc).toLocaleString(undefined, { maximumFractionDigits: 2 })} of ${loan.principal_usdc.toLocaleString()}
+                {progressPct.toFixed(0)}% repaid · ${Math.round(loan.principal_usdc - loan.remaining_usdc).toLocaleString()} of ${Math.round(loan.principal_usdc).toLocaleString()}
               </p>
             </div>
           </div>
@@ -139,7 +139,7 @@ export default function ActiveLoan() {
             <div className="bg-gray-50 rounded-xl p-3">
               <p className="text-[10px] text-[#909090] uppercase tracking-wider mb-1">Weekly repayment</p>
               <p className="text-base font-bold text-gray-900">
-                ${loan.weekly_repayment.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                ${Math.round(loan.weekly_repayment).toLocaleString()}
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-3">
@@ -174,7 +174,7 @@ export default function ActiveLoan() {
           <div className="w-full bg-white rounded-t-3xl p-6 pb-8 animate-in slide-in-from-bottom duration-300">
             <div className="mx-auto w-12 h-2 bg-gray-300 rounded-full mb-6" />
             <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
-              Repay ${repayAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              Repay ${Math.round(repayAmount).toLocaleString()}
             </h3>
             <p className="text-sm text-[#909090] text-center mb-6">
               This will be deducted toward your loan.
