@@ -71,3 +71,7 @@ Thumbs.db
 .LSOverride
 
 kiro.json
+
+# Cardano deployment artifacts (private keys, temp files)
+contracts-cardano/wallet/
+contracts-cardano/.deploy-tmp/

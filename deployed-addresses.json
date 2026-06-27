@@ -1,0 +1,13 @@
+{
+  "network": "preprod",
+  "cardano": {
+    "policy_id": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea",
+    "script_address": "addr_test1wr00dqehse7tfu0etd4cz8ldhlxaw7qdzz54esrjqacg36sp45dt3",
+    "token_name": "TRK-1",
+    "asset_id": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea54524b2d31",
+    "mint_tx_hash": "807b2fe20c6b930ddbeebd33943c06c9f47df950f2a93df4099c10df52fc7fa9"
+  },
+  "midnight": {
+    "status": "pending"
+  }
+}

@@ -19,7 +19,34 @@ app.use(
 );
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, network: "midnight-preprod" });
+  res.json({
+    ok: true,
+    networks: {
+      midnight: "preprod",
+      cardano: config.cardanoNetwork,
+    },
+  });
+});
+
+/** Public chain config — lets the frontend know which contracts are deployed. */
+app.get("/config", (_req, res) => {
+  res.json({
+    cardano: {
+      network: config.cardanoNetwork,
+      policyId: config.cardanoPolicyId,
+      contractAddress: config.cardanoContractAddress,
+      tokenName: config.cardanoTokenName,
+      assetId: config.cardanoPolicyId
+        ? config.cardanoPolicyId + Buffer.from(config.cardanoTokenName, "utf-8").toString("hex")
+        : "",
+    },
+    midnight: {
+      network: "preprod",
+      userRegistryAddress: config.midnightUserRegistryAddress || null,
+      investmentAddress: config.midnightInvestmentAddress || null,
+      vaultAddress: config.midnightVaultAddress || null,
+    },
+  });
 });
 
 app.use("/auth", authRoutes);

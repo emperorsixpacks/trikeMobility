@@ -99,6 +99,30 @@ function safeParse(text: string): unknown {
 }
 
 // =============================================================================
+// Chain config — deployed contract addresses
+// =============================================================================
+
+export type ChainConfig = {
+  cardano: {
+    network: string;
+    policyId: string;
+    contractAddress: string;
+    tokenName: string;
+    assetId: string;
+  };
+  midnight: {
+    network: string;
+    userRegistryAddress: string | null;
+    investmentAddress: string | null;
+    vaultAddress: string | null;
+  };
+};
+
+export function getChainConfig(): Promise<ChainConfig> {
+  return request<ChainConfig>("/config", { skipAuth: true });
+}
+
+// =============================================================================
 // Auth
 // =============================================================================
 

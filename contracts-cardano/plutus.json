@@ -12,6 +12,25 @@
   },
   "validators": [
     {
+      "title": "test_mint.test_mint.mint",
+      "redeemer": {
+        "title": "_redeemer",
+        "schema": {
+          "$ref": "#/definitions/Data"
+        }
+      },
+      "compiledCode": "585401010029800aba2aba1aab9eaab9dab9a4888896600264653001300600198031803800cc0180092225980099b8748000c01cdd500144c9289bae30093008375400516401830060013003375400d149a26cac8009",
+      "hash": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea"
+    },
+    {
+      "title": "test_mint.test_mint.else",
+      "redeemer": {
+        "schema": {}
+      },
+      "compiledCode": "585401010029800aba2aba1aab9eaab9dab9a4888896600264653001300600198031803800cc0180092225980099b8748000c01cdd500144c9289bae30093008375400516401830060013003375400d149a26cac8009",
+      "hash": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea"
+    },
+    {
       "title": "tricycle_nft.tricycle_nft.mint",
       "redeemer": {
         "title": "redeemer",
@@ -32,6 +51,10 @@
     }
   ],
   "definitions": {
+    "Data": {
+      "title": "Data",
+      "description": "Any Plutus data."
+    },
     "Int": {
       "dataType": "integer"
     },

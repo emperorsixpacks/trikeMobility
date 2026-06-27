@@ -25,9 +25,11 @@ export const config = {
 
   // --- Cardano (public assets — Preprod testnet) ---
   cardanoNetwork: process.env.CARDANO_NETWORK ?? "preprod",
-  cardanoOgmiUrl: process.env.CARDANO_OGMI_URL ?? "https://ogmios-preprod.api.midnight.network",
-  cardanoKupoUrl: process.env.CARDANO_KUPO_URL ?? "https://kupo-preprod.api.midnight.network",
+  cardanoBlockfrostUrl: process.env.CARDANO_BLOCKFROST_URL ?? "https://cardano-preprod.blockfrost.io/api/v0",
+  cardanoBlockfrostKey: process.env.BLOCKFROST_PROJECT_ID ?? "",
   cardanoContractAddress: process.env.CARDANO_CONTRACT_ADDRESS ?? "",
+  cardanoPolicyId: process.env.CARDANO_POLICY_ID ?? "",
+  cardanoTokenName: process.env.CARDANO_TOKEN_NAME ?? "TRK-1",
 
   // --- Paycrest fiat bridge (API-only, no EVM) ---
   paycrestBase: process.env.PAYCREST_BASE ?? "https://api.paycrest.io/v1",

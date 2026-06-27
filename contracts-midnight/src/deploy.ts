@@ -1,67 +1,124 @@
 // 3rike Midnight Contract Deployment — Preprod Testnet
 //
-// This script deploys all three Compact contracts to Midnight Preprod.
-// Usage: PRIVATE_KEY=0x... npm run deploy
-//
-// Prerequisites:
-// 1. Docker running: docker run -p 6300:6300 midnightntwrk/proof-server:latest midnight-proof-server -v
-// 2. Funded testnet wallet (get tNIGHT from https://midnight-tmnight-preprod.nethermind.dev/)
+// Usage: npx tsx src/deploy.ts
+// Prerequisites: proof server running on localhost:6300
 
-import { readFileSync } from 'node:fs';
+import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
+import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
+import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
+import { NodeZkConfigProvider } from '@midnight-ntwrk/midnight-js-node-zk-config-provider';
+import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
+import { deployContract } from '@midnight-ntwrk/midnight-js-contracts';
+import { DustWallet } from '@midnight-ntwrk/wallet-sdk-dust-wallet';
+import { WalletFacade } from '@midnight-ntwrk/wallet-sdk-facade';
+import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const PREPROD_NETWORK = {
+const PREPROD = {
   node: 'https://rpc.preprod.midnight.network',
-  indexer: 'https://indexer.preprod.midnight.network',
+  indexer: 'https://indexer.preprod.midnight.network/api/v4/graphql',
   proofServer: 'http://localhost:6300',
+  explorer: 'https://preprod.midnightexplorer.com',
 };
 
-async function loadContract(name: string) {
-  const contractPath = resolve(
-    import.meta.dirname,
-    `../managed/${name}.compact/contract/index.js`
-  );
-  const mod = await import(contractPath);
-  return mod;
+function loadContract(name: string) {
+  const p = resolve(import.meta.dirname, `../managed/${name}.compact/contract/index.js`);
+  return import(p);
 }
 
 async function main() {
   console.log('=== 3rike Midnight Deployment ===\n');
 
-  const network = PREPROD_NETWORK;
-  console.log(`Network: Preprod`);
-  console.log(`Node: ${network.node}`);
-  console.log(`Proof Server: ${network.proofServer}\n`);
+  // Set network
+  setNetworkId('preprod');
 
-  // Load compiled contracts
-  console.log('Loading compiled contracts...');
-  const userRegistry = await loadContract('user-registry');
-  const privateInvestment = await loadContract('private-investment');
-  const yieldVault = await loadContract('yield-vault');
+  // 1. Create wallet
+  console.log('Creating wallet...');
+  const facade = new WalletFacade();
+  await facade.start();
 
-  console.log('  UserRegistry circuits:', Object.keys(userRegistry));
-  console.log('  PrivateInvestment circuits:', Object.keys(privateInvestment));
-  console.log('  YieldVault circuits:', Object.keys(yieldVault));
+  const walletEntry = facade.createWalletEntry();
+  const mnemonic = walletEntry.mnemonic;
+  const unshieldedAddress = walletEntry.unshieldedAddress;
 
-  console.log('\n=== Contract Summary ===');
-  console.log('UserRegistry:');
-  console.log('  - register(role): commits KYC hash, returns commitment');
-  console.log('  - verify(commitment): checks if user is registered');
-  console.log('  - revoke(commitment): admin removes user');
-  console.log('');
-  console.log('PrivateInvestment:');
-  console.log('  - openPool(id, shares, price): admin opens pool');
-  console.log('  - invest(id): private investment, returns commitment');
-  console.log('  - proveOwnership(id): proves share ownership');
-  console.log('');
-  console.log('YieldVault:');
-  console.log('  - deposit(): private deposit, returns commitment');
-  console.log('  - proveOwnership(): proves vault share ownership');
+  console.log('\n========================================');
+  console.log('  WALLET CREATED — SAVE THIS SECURELY');
+  console.log('========================================');
+  console.log(`  Mnemonic: ${mnemonic}`);
+  console.log(`  Unshielded address: ${unshieldedAddress}`);
+  console.log('========================================\n');
 
-  console.log('\n=== Next Steps ===');
-  console.log('1. Start proof server: docker run -p 6300:6300 midnightntwrk/proof-server:latest midnight-proof-server -v');
-  console.log('2. Fund wallet with tNIGHT from faucet');
-  console.log('3. Run: npm run test');
+  // Save to .env
+  writeFileSync(
+    resolve(import.meta.dirname, '../.env.preprod'),
+    `MIDNIGHT_PREPROD_MNEMONIC=${mnemonic}\n`,
+  );
+  console.log('Saved mnemonic to .env.preprod\n');
+
+  // 2. Set up providers
+  console.log('Connecting to proof server...');
+  const proofProvider = httpClientProofProvider({ url: PREPROD.proofServer });
+  const publicDataProvider = indexerPublicDataProvider({
+    indexerUrl: PREPROD.indexer,
+    nodeUrl: PREPROD.node,
+  });
+  const privateStateProvider = levelPrivateStateProvider({
+    storageDirectory: resolve(import.meta.dirname, '../.private-state'),
+  });
+  const zkConfigProvider = new NodeZkConfigProvider(PREPROD.proofServer);
+
+  // 3. Create DustWallet and sync
+  console.log('Setting up DustWallet...');
+  const dustWallet = new DustWallet(facade, walletEntry);
+  await dustWallet.start();
+  await dustWallet.sync({
+    publicDataProvider,
+    syncTimeoutMs: 600_000,
+  });
+
+  const balance = dustWallet.balance();
+  console.log(`Wallet balance: tNIGHT=${balance?.night ?? 0}, tDUST=${balance?.dust ?? 0}`);
+
+  // 4. Deploy contracts
+  const contracts = ['user-registry', 'private-investment', 'yield-vault'];
+  const addresses: Record<string, string> = {};
+
+  for (const name of contracts) {
+    console.log(`\nDeploying ${name}...`);
+    const contractModule = await loadContract(name);
+
+    const providers = {
+      publicDataProvider,
+      privateStateProvider,
+      proofProvider,
+      zkConfigProvider,
+    };
+
+    const deployed = await deployContract(providers, {
+      compiledContract: contractModule.Contract,
+      privateStateId: `3rike-${name}`,
+    });
+
+    addresses[name] = deployed.address;
+    console.log(`  Deployed at: ${deployed.address}`);
+    console.log(`  Explorer: ${PREPROD.explorer}/contract/${deployed.address}`);
+  }
+
+  // 5. Save addresses
+  const addressesPath = resolve(import.meta.dirname, '../deployed-addresses.json');
+  writeFileSync(addressesPath, JSON.stringify(addresses, null, 2));
+  console.log(`\nContract addresses saved to deployed-addresses.json`);
+  console.log(JSON.stringify(addresses, null, 2));
+
+  console.log('\n=== Deployment Complete ===');
+  console.log(`Fund wallet: https://midnight-tmnight-preprod.nethermind.dev/`);
+  console.log(`Address: ${unshieldedAddress}`);
+
+  await dustWallet.stop();
+  await facade.stop();
 }
 
-main().catch(console.error);
+main().catch((err) => {
+  console.error('Deployment failed:', err);
+  process.exit(1);
+});
