@@ -27,7 +27,7 @@ const DEFAULT: CatalogEntry = {
 };
 
 const CATALOG: Record<string, CatalogEntry> = {
-  "RDB-001": {
+  "TRK-001": {
     image: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80",
     location: "Lagos, Nigeria",
     description:
@@ -35,13 +35,21 @@ const CATALOG: Record<string, CatalogEntry> = {
     weeklyRepayment: 70,
     investorWeekly: 9, // ~19% APR on a $2,500 asset
   },
-  "RDB-002": {
+  "TRK-002": {
     image: "https://images.unsplash.com/photo-1606584829040-9a3a3d6f6efb?w=800&q=80",
     location: "Ibadan, Nigeria",
     description:
       "Mahindra Treo EV with the longest range in the fleet, covering intercity hops. Premium electric asset with the strongest projected yield.",
     weeklyRepayment: 70,
     investorWeekly: 11, // ~20% APR on a $2,800 asset
+  },
+  "TRK-003": {
+    image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=800&q=80",
+    location: "Accra, Ghana",
+    description:
+      "TVS King electric trike on the Accra–Tema corridor. New market entry with strong demand for last-mile passenger transport.",
+    weeklyRepayment: 65,
+    investorWeekly: 8, // ~18% APR on a $2,300 asset
   },
 };
 

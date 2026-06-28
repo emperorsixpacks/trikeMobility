@@ -57,15 +57,29 @@ async function readLedger(contractAddr: string, field: string): Promise<unknown>
 }
 
 // ---------------------------------------------------------------------------
+// Mock data — used when Midnight contracts are not deployed (demo mode)
+// ---------------------------------------------------------------------------
+
+const MOCK_POOLS: Record<number, OnchainPool> = {
+  1: { pricePerShareRaw: 500_000000n, totalShares: 100n, sharesSold: 65n, active: true },
+  2: { pricePerShareRaw: 560_000000n, totalShares: 80n, sharesSold: 42n, active: true },
+  3: { pricePerShareRaw: 460_000000n, totalShares: 120n, sharesSold: 30n, active: true },
+};
+
+function isMidnightDeployed(): boolean {
+  return !!(config.midnightUserRegistryAddress && config.midnightInvestmentAddress);
+}
+
+// ---------------------------------------------------------------------------
 // Investment reads
 // ---------------------------------------------------------------------------
 
 /** How many tricycle pools exist (count of entries in the pools map). */
 export async function tricycleCount(): Promise<number> {
+  if (!isMidnightDeployed()) return Object.keys(MOCK_POOLS).length;
+
   const addrs = getContractAddresses();
   const result = await readLedger(addrs.privateInvestment, "pools");
-  // The pools map is a Map<Uint<64>, Pool> — count its entries.
-  // In production, the Midnight indexer provides a count endpoint.
   return Array.isArray(result) ? result.length : 0;
 }
 
@@ -77,6 +91,12 @@ export async function getTricycleMeta(id: number): Promise<OnchainTricycle> {
 }
 
 export async function getPool(id: number): Promise<OnchainPool> {
+  if (!isMidnightDeployed()) {
+    const pool = MOCK_POOLS[id];
+    if (!pool) throw new Error(`Pool ${id} not found (mock mode)`);
+    return pool;
+  }
+
   const addrs = getContractAddresses();
   const pool = await readLedger(addrs.privateInvestment, `pools.${id}`) as {
     totalShares: string;

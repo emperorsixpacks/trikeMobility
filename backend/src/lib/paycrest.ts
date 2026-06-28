@@ -9,16 +9,21 @@ async function pc(
   path: string,
   init?: RequestInit,
 ): Promise<{ ok: boolean; status: number; data: any }> {
-  const res = await fetch(`${config.paycrestBase}${path}`, {
-    ...init,
-    headers: {
-      "API-Key": config.paycrestApiKey,
-      "Content-Type": "application/json",
-      ...(init?.headers as Record<string, string> | undefined),
-    },
-  });
-  const data = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, data };
+  try {
+    const res = await fetch(`${config.paycrestBase}${path}`, {
+      ...init,
+      headers: {
+        "API-Key": config.paycrestApiKey,
+        "Content-Type": "application/json",
+        ...(init?.headers as Record<string, string> | undefined),
+      },
+      signal: AbortSignal.timeout(10_000),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, data };
+  } catch {
+    return { ok: false, status: 503, data: { message: "Paycrest API unreachable" } };
+  }
 }
 
 /** Off-ramp sell rate: how many NGN per 1 USDC (string). */
@@ -139,16 +144,21 @@ async function pcV2(
   path: string,
   init?: RequestInit,
 ): Promise<{ ok: boolean; status: number; data: any }> {
-  const res = await fetch(`https://api.paycrest.io/v2${path}`, {
-    ...init,
-    headers: {
-      "API-Key": config.paycrestApiKey,
-      "Content-Type": "application/json",
-      ...(init?.headers as Record<string, string> | undefined),
-    },
-  });
-  const data = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, data };
+  try {
+    const res = await fetch(`https://api.paycrest.io/v2${path}`, {
+      ...init,
+      headers: {
+        "API-Key": config.paycrestApiKey,
+        "Content-Type": "application/json",
+        ...(init?.headers as Record<string, string> | undefined),
+      },
+      signal: AbortSignal.timeout(10_000),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, data };
+  } catch {
+    return { ok: false, status: 503, data: { message: "Paycrest API unreachable" } };
+  }
 }
 
 /** On-ramp buy rate: NGN per 1 USDC (string). */
