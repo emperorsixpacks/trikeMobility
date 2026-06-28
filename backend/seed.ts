@@ -132,15 +132,15 @@ async function main() {
       { userId: investor1.id, tricycleId: 1, vehicleId: "TRK-001", action: "invest", shares: "30", amountUsdc: "1500.000000", commitment: "inv-001-i1", txHash: "commit-i1-trk1-001", createdAt: daysAgo(25) },
       // Investor 1 — TRK-001 (10 more shares)
       { userId: investor1.id, tricycleId: 1, vehicleId: "TRK-001", action: "invest", shares: "10", amountUsdc: "500.000000", commitment: "inv-001-i1b", txHash: "commit-i1-trk1-002", createdAt: daysAgo(12) },
-      // Investor 1 — TRK-002 (20 shares at $56/share = $1120)
-      { userId: investor1.id, tricycleId: 2, vehicleId: "TRK-002", action: "invest", shares: "20", amountUsdc: "1120.000000", commitment: "inv-002-i1", txHash: "commit-i1-trk2-001", createdAt: daysAgo(18) },
+      // Investor 1 — TRK-002 (20 shares at $50/share = $1000)
+      { userId: investor1.id, tricycleId: 2, vehicleId: "TRK-002", action: "invest", shares: "20", amountUsdc: "1000.000000", commitment: "inv-002-i1", txHash: "commit-i1-trk2-001", createdAt: daysAgo(18) },
       // Investor 1 — yield claim on TRK-001
       { userId: investor1.id, tricycleId: 1, vehicleId: "TRK-001", action: "claim", shares: null, amountUsdc: "0", commitment: "clm-001-i1", txHash: "commit-claim-i1-trk1", createdAt: daysAgo(5) },
 
       // Investor 2 — TRK-001 (15 shares at $50/share = $750)
       { userId: investor2.id, tricycleId: 1, vehicleId: "TRK-001", action: "invest", shares: "15", amountUsdc: "750.000000", commitment: "inv-001-i2", txHash: "commit-i2-trk1-001", createdAt: daysAgo(20) },
-      // Investor 2 — TRK-003 (25 shares at $46/share = $1150)
-      { userId: investor2.id, tricycleId: 3, vehicleId: "TRK-003", action: "invest", shares: "25", amountUsdc: "1150.000000", commitment: "inv-003-i2", txHash: "commit-i2-trk3-001", createdAt: daysAgo(15) },
+      // Investor 2 — TRK-003 (25 shares at $50/share = $1250)
+      { userId: investor2.id, tricycleId: 3, vehicleId: "TRK-003", action: "invest", shares: "25", amountUsdc: "1250.000000", commitment: "inv-003-i2", txHash: "commit-i2-trk3-001", createdAt: daysAgo(15) },
     ],
   });
   console.log("  Created 6 investment records");

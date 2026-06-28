@@ -75,7 +75,7 @@ function toTricycleView(id: number, pool: OnchainPool): TricycleView {
     description: cat.description,
     projectedApr: aprFor(vehicleId, Number(pool.pricePerShareRaw) / 1e6),
     weeklyRepayment: cat.weeklyRepayment,
-    pricePerShare: String(pool.pricePerShareRaw),
+    pricePerShare: String(Number(pool.pricePerShareRaw) / 1e6),
     totalShares: total,
     sharesSold: sold,
     sharesAvailable: total - sold,

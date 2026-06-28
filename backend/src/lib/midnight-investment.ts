@@ -61,9 +61,12 @@ async function readLedger(contractAddr: string, field: string): Promise<unknown>
 // ---------------------------------------------------------------------------
 
 const MOCK_POOLS: Record<number, OnchainPool> = {
-  1: { pricePerShareRaw: 500_000000n, totalShares: 100n, sharesSold: 65n, active: true },
-  2: { pricePerShareRaw: 560_000000n, totalShares: 80n, sharesSold: 42n, active: true },
-  3: { pricePerShareRaw: 460_000000n, totalShares: 120n, sharesSold: 30n, active: true },
+  // TRK-001: Bajaj RE keke, $1,800 total, 36 shares × $50 each
+  1: { pricePerShareRaw: 50_000000n, totalShares: 36n, sharesSold: 22n, active: true },
+  // TRK-002: Mahindra Treo EV, $2,200 total, 44 shares × $50 each
+  2: { pricePerShareRaw: 50_000000n, totalShares: 44n, sharesSold: 18n, active: true },
+  // TRK-003: TVS King EV, $1,500 total, 30 shares × $50 each
+  3: { pricePerShareRaw: 50_000000n, totalShares: 30n, sharesSold: 10n, active: true },
 };
 
 function isMidnightDeployed(): boolean {

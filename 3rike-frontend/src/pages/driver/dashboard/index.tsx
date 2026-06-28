@@ -102,9 +102,6 @@ export default function DriverDashboard() {
   const handleSavings = () => {
     navigate("/driver/savings");
   };
-  const handleInvestment = () => {
-    navigate("/driver/investment");
-  };
   const handleVerification = () => {
     if (verificationStatus === "approved") {
       navigate("/driver/own-3rike");
@@ -390,19 +387,19 @@ export default function DriverDashboard() {
               <span className="text-gray-800 text-lg">Savings</span>
             </div>
 
-            {/* Investment */}
+            {/* My 3rike — driver's assigned tricycle */}
             <div
-              onClick={handleInvestment}
+              onClick={handleVerification}
               className="bg-white border-3 border-dashed border-gray-100 rounded-2xl p-4 flex flex-col gap-2 cursor-pointer"
             >
               <div className="w-5 h-5 bg-white/20 rounded-lg flex items-center justify-center mb-2 backdrop-blur-md">
                 <img
                   src="/invest.svg"
-                  alt="invest"
+                  alt="3rike"
                   className="absolute inset-0 w-full h-full  object-cover z-0"
                 />
               </div>
-              <span className="text-gray-800 text-lg">Investment</span>
+              <span className="text-gray-800 text-lg">My 3rike</span>
             </div>
 
             {/* Earn */}
