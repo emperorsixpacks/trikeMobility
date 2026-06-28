@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowUpRight, Plus, TrendingUp } from "lucide-react";
+import { ArrowUpRight, ExternalLink, Plus, TrendingUp } from "lucide-react";
 import DepositModal from "../deposit";
 import WithdrawModal from "../withdraw/modal";
 import BottomNav from "@/components/ui/bottom-nav";
@@ -162,8 +162,16 @@ export default function DriverDashboard() {
                   <span className="text-green-100 text-sm font-light">
                     Wallet Balance
                   </span>
-                  <span className="text-green-100/80 text-[10px] font-light">
-                    Robinhood Chain
+                  <span className="text-green-100/80 text-[10px] font-light flex items-center gap-1">
+                    Cardano Preprod
+                    <a
+                      href="https://preprod.cardanoscan.io/address/addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ExternalLink size={10} />
+                    </a>
                   </span>
                 </div>
 
