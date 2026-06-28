@@ -49,7 +49,7 @@ export default function LoginForm() {
                 navigate(from, { replace: true });
                 return;
             }
-            navigate(user.role === "investor" ? "/driver" : "/driver", { replace: true });
+            navigate(user.role === "investor" ? "/investor" : "/driver", { replace: true });
         } catch (err) {
             setServerError(messageFor(err));
         } finally {

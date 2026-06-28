@@ -13,12 +13,14 @@ import {
   Info,
   ChevronRight,
 } from "lucide-react";
+import { useDashboardBase } from "@/lib/use-dashboard-base";
 import { useAuth } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
 import MobileFrame from "@/components/ui/mobile-frame";
 
 export default function SettingsHome() {
     const navigate = useNavigate();
+    const base = useDashboardBase();
     const { logout, deleteAccount } = useAuth();
     const [confirmSignOut, setConfirmSignOut] = useState(false);
     const [signingOut, setSigningOut] = useState(false);
@@ -99,32 +101,32 @@ export default function SettingsHome() {
                     <MenuItem
                         icon={User}
                         label="My Profile"
-                        onClick={() => navigate("/driver/settings/profile")}
+                        onClick={() => navigate(`${base}/settings/profile`)}
                     />
                     <MenuItem
                         icon={Wallet}
                         label="Wallet"
-                        onClick={() => navigate("/driver/wallet")}
+                        onClick={() => navigate(`${base}/wallet`)}
                     />
                     <MenuItem
                         icon={Mail}
                         label="Edit Email"
-                        onClick={() => navigate("/driver/settings/edit-email")}
+                        onClick={() => navigate(`${base}/settings/edit-email`)}
                     />
                     <MenuItem
                         icon={Lock}
                         label="Payment Settings"
-                        onClick={() => navigate("/driver/settings/payment")}
+                        onClick={() => navigate(`${base}/settings/payment`)}
                     />
                     <MenuItem
                         icon={Key}
                         label="Change Password"
-                        onClick={() => navigate("/driver/settings/change-password")}
+                        onClick={() => navigate(`${base}/settings/change-password`)}
                     />
                     <MenuItem
                         icon={Key}
                         label="Active Sessions"
-                        onClick={() => navigate("/driver/settings/sessions")}
+                        onClick={() => navigate(`${base}/settings/sessions`)}
                         showBorder={false}
                     />
                 </MenuGroup>

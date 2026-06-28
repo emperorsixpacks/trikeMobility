@@ -6,9 +6,11 @@ import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import MobileFrame from "@/components/ui/mobile-frame";
 import Avatar from "@/components/ui/avatar";
+import { useDashboardBase } from "@/lib/use-dashboard-base";
 
 export default function SettingsProfile() {
     const navigate = useNavigate();
+    const base = useDashboardBase();
     const { user, updateProfile } = useAuth();
     const [copied, setCopied] = useState(false);
 
@@ -107,7 +109,7 @@ export default function SettingsProfile() {
 
                 {/* Wallet Address Card — EVM wallet, tap to open wallet page */}
                 <div
-                    onClick={() => navigate("/driver/wallet")}
+                    onClick={() => navigate(`${base}/wallet`)}
                     className="w-full bg-white rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
                 >
                     <span className="text-gray-900 font-medium text-sm">Wallet</span>

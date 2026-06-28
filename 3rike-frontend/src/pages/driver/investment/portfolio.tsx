@@ -10,9 +10,11 @@ import {
   getPortfolio,
   type Portfolio,
 } from "@/lib/api";
+import { useDashboardBase } from "@/lib/use-dashboard-base";
 
 export default function InvestmentPortfolio() {
   const navigate = useNavigate();
+  const base = useDashboardBase();
 
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -153,7 +155,7 @@ export default function InvestmentPortfolio() {
             {error ?? "Browse the marketplace and buy your first shares to start earning yield."}
           </p>
           <Button
-            onClick={() => navigate("/driver/investment")}
+            onClick={() => navigate(`${base}/investment`)}
             className="h-11 px-6 bg-[#01C259] hover:bg-[#00a049] text-white rounded-xl text-sm font-medium cursor-pointer"
           >
             Open marketplace

@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, Bell, Home, Send, User } from "lucide-react";
+import { ArrowDown, Bell, Home, Send, TrendingUp, User } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 export default function BottomNav() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handle3rikeAi = () => navigate("/driver/3rikeAi");
-  const handleNotification = () => navigate("/driver/notification");
-  const handleSettings = () => navigate("/driver/settings");
-  const handleHome = () => navigate("/driver");
+  const base = user?.role === "investor" ? "/investor" : "/driver";
+
+  const handle3rikeAi = () => navigate(`${base}/3rikeAi`);
+  const handleNotification = () => navigate(`${base}/notification`);
+  const handleSettings = () => navigate(`${base}/settings`);
+  const handleHome = () => navigate(base);
 
   return (
     <>
@@ -62,16 +66,18 @@ export default function BottomNav() {
         <div className="absolute inset-0 z-50 bg-[#F3F5F9]/95 backdrop-blur-sm flex flex-col justify-end items-end p-2 animate-in fade-in duration-200">
           {/* Menu Items Container */}
           <div className="flex flex-col gap-6 mb-10 mr-20 items-start">
-            {/* Option 1: Pay 3rike Ai */}
-            <div
-              onClick={handle3rikeAi}
-              className="flex items-center gap-4 cursor-pointer group"
-            >
-              <User className="w-6 h-6 text-[#00C259]" fill="#00C259" />
-              <span className="text-lg font-light text-black group-hover:text-gray-700">
-                Pay 3rike Ai
-              </span>
-            </div>
+            {/* Option 1: Pay 3rike Ai (driver only) */}
+            {user?.role !== "investor" && (
+              <div
+                onClick={handle3rikeAi}
+                className="flex items-center gap-4 cursor-pointer group"
+              >
+                <User className="w-6 h-6 text-[#00C259]" fill="#00C259" />
+                <span className="text-lg font-light text-black group-hover:text-gray-700">
+                  Pay 3rike Ai
+                </span>
+              </div>
+            )}
 
             {/* Option 2: Send */}
             <div className="flex items-center gap-4 cursor-pointer group">
@@ -88,6 +94,19 @@ export default function BottomNav() {
                 Recieve
               </span>
             </div>
+
+            {/* Investor: Browse Marketplace */}
+            {user?.role === "investor" && (
+              <div
+                onClick={() => { navigate(`${base}/investment`); setIsMenuOpen(false); }}
+                className="flex items-center gap-4 cursor-pointer group"
+              >
+                <TrendingUp className="w-6 h-6 text-[#01C259]" />
+                <span className="text-lg font-light text-black group-hover:text-gray-700">
+                  Browse Marketplace
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Close Button */}

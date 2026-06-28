@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ChevronRight } from "lucide-react";
 import MobileFrame from "@/components/ui/mobile-frame";
+import { useDashboardBase } from "@/lib/use-dashboard-base";
 
 export default function PaymentSettings() {
     const navigate = useNavigate();
+    const base = useDashboardBase();
     const [faceIdEnabled, setFaceIdEnabled] = useState(false);
 
     // Helper component for individual menu items
@@ -63,7 +65,7 @@ export default function PaymentSettings() {
                     <MenuGroup>
                         <MenuItem
                             label="Change Payment Pin"
-                            onClick={() => navigate("/driver/settings/change-pin")}
+                            onClick={() => navigate(`${base}/settings/change-pin`)}
                         />
                         <MenuItem
                             label="Forgot Payment Pin"

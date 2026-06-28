@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Minus, Plus, MapPin, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useDashboardBase } from "@/lib/use-dashboard-base";
 import {
   ApiError,
   invest,
@@ -12,6 +13,7 @@ import {
 
 export default function InvestmentApp() {
   const navigate = useNavigate();
+  const base = useDashboardBase();
   const [qty, setQty] = useState(1);
   const [activeThumb, setActiveThumb] = useState(0);
   const [success, setSuccess] = useState<InvestResult | null>(null);
@@ -86,7 +88,7 @@ export default function InvestmentApp() {
           </p>
           <div className="flex flex-col gap-3 w-full">
             <Button
-              onClick={() => navigate("/driver/investment/portfolio")}
+              onClick={() => navigate(`${base}/investment/portfolio`)}
               className="w-full h-12 bg-[#01C259] hover:bg-[#00a049] text-white rounded-2xl cursor-pointer"
             >
               View my portfolio
@@ -128,7 +130,7 @@ export default function InvestmentApp() {
 
           <button
             type="button"
-            onClick={() => navigate("/driver/investment/portfolio")}
+            onClick={() => navigate(`${base}/investment/portfolio`)}
             className="text-xs font-semibold text-[#01C259] hover:underline cursor-pointer shrink-0"
           >
             My portfolio
