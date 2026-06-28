@@ -3,9 +3,26 @@
   "cardano": {
     "policy_id": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea",
     "script_address": "addr_test1wr00dqehse7tfu0etd4cz8ldhlxaw7qdzz54esrjqacg36sp45dt3",
-    "token_name": "TRK-1",
-    "asset_id": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea54524b2d31",
-    "mint_tx_hash": "807b2fe20c6b930ddbeebd33943c06c9f47df950f2a93df4099c10df52fc7fa9"
+    "explorer_base": "https://preprod.cardanoscan.io",
+    "tokens": [
+      {
+        "token_name": "TRK-1",
+        "asset_id": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea54524b2d31",
+        "mint_tx_hash": "c2c73222",
+        "asset_fingerprint": "asset196dn0nhuyzwzz473nw5d5vu685glnfa6h3g3hm"
+      },
+      {
+        "token_name": "TRK-2",
+        "asset_id": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea54524b2d32",
+        "mint_tx_hash": "8745df0d814f393d53574b2543ab27a4eecddfe0d2e589b836a9e97f22cca622"
+      },
+      {
+        "token_name": "TRK-3",
+        "asset_id": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea54524b2d33",
+        "mint_tx_hash": "c48bcb53c35dc32fd0055268001208de53d7f29636b21dc92fc9054d12633f88"
+      }
+    ],
+    "wallet_address": "addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd"
   },
   "midnight": {
     "status": "pending"
