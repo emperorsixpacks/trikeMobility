@@ -4,6 +4,7 @@ import Layout from "@/components/ui/layout";
 import { CreateAccountForm, ForgotPasswordEmailForm, ForgotPasswordPhoneForm, Landing, LoginForm, NoMatch, Onboarding, DriverDashboard, VerifyAccountForm, VerificationSuccess, VerificationFailed, VerificationFailedForm, LoanDashboard, LoanRequestSuccess, LoanNotification, SavingsOnboarding, SavingsDashboard, Loan, Savings, Verification, SavingsTargetDashboard, SavingsTargetForm, SavingsSummary, SavingsNotification, SavingsTargetSuccess, AiDashboard, DriverNotification, Withdraw, SetPinWithdraw, WithdrawBankDetails, WithdrawSendMoney, Settings, SettingsHome, SettingsProfile, PaymentSettings, ChangePaymentPin, WithdrawCryptoAsset, Investment, InvestmentHome, Own3rike, Own3rikeDetails, Welcome3riker, ThreeDetails, InvestmentPortfolio, ActiveLoan, EditEmail, ChangePassword, Sessions, Wallet, Waitlist } from "./pages";
 import SelectCryptoAsset from "./pages/driver/withdraw/crypto/select-crypto";
 import InvestorDashboard from "./pages/investor/dashboard";
+import RoleSelect from "./pages/auth/role-select";
 import { AuthProvider } from "@/lib/auth";
 import RequireAuth from "@/lib/require-auth";
 import RequireRole from "@/lib/require-role";
@@ -20,6 +21,8 @@ function App() {
 
           {/* auth */}
           <Route path="/create-account-rider" element={<CreateAccountForm />} />
+          <Route path="/create-account" element={<CreateAccountForm />} />
+          <Route path="/role-select" element={<RoleSelect />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/forgot-password-phone" element={<ForgotPasswordPhoneForm />} />
           <Route path="/forgot-password-email" element={<ForgotPasswordEmailForm />} />

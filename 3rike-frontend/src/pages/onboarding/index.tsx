@@ -117,7 +117,7 @@ export default function Onboarding() {
                 {/* Buttons Block */}
                 <div className="space-y-4 w-full">
                     <Button
-                        onClick={() => navigate("/create-account-rider")}
+                        onClick={() => navigate("/role-select")}
                         className="w-full h-14 rounded-xl bg-[#01C259] hover:bg-[#01a64c] text-white font-medium text-base shadow-none transition-colors"
                     >
                         Create account

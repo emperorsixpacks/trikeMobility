@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import pin from "@/assets/pin.svg";
 import back from "@/assets/back.svg";
 import warning from "@/assets/warning.svg";
@@ -52,6 +52,8 @@ const PENDING_PROFILE_KEY = "3rike.pendingDriverProfile";
 export default function CreateAccountForm() {
     const [currentTab, setCurrentTab] = useState(0);
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const role = (searchParams.get("role") === "investor" ? "investor" : "driver") as "driver" | "investor";
     const { register: registerUser } = useAuth();
     const [loading, setLoading] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
@@ -137,14 +139,14 @@ export default function CreateAccountForm() {
             await registerUser(
                 data.email.trim().toLowerCase(),
                 data.password,
-                "driver",
+                role,
                 {
                     fullName: `${data.firstName.trim()} ${data.lastName.trim()}`.trim(),
                     phone: data.phone.trim(),
                     pin: data.pin,
                 },
             );
-            navigate("/driver", { replace: true });
+            navigate(role === "investor" ? "/investor" : "/driver", { replace: true });
         } catch (err) {
             setServerError(messageFor(err));
         } finally {
