@@ -14,11 +14,7 @@ pub type Redeemer {
 }
 
 validator tricycle_nft {
-  mint(
-    redeemer: Redeemer,
-    policy_id: PolicyId,
-    self: Transaction,
-  ) {
+  mint(redeemer: Redeemer, policy_id: PolicyId, self: Transaction) {
     when redeemer is {
       MintTricycle(tricycle_id) -> {
         let token_name: ByteArray = build_name(tricycle_id)
@@ -27,6 +23,10 @@ validator tricycle_nft {
       }
       BurnTricycle -> True
     }
+  }
+
+  else(_) {
+    fail
   }
 }
 

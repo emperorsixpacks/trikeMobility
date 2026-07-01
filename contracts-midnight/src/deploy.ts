@@ -136,6 +136,7 @@ async function main() {
       additionalFeeOverhead: 300_000_000_000_000n,
       feeBlocksMargin: 5,
     },
+    batchUpdates: { size: 5000, timeout: 1, spacing: 4 },
   };
 
   const facade = await WalletFacade.init({
@@ -188,6 +189,10 @@ async function main() {
 
   try {
     await new Promise<void>((res, rej) => {
+      let lastDustIndex = 0n;
+      let dustStableCount = 0;
+      const DUST_STABLE_REQUIRED = 3;
+
       const sub = facade.state().pipe(Rx.throttleTime(10_000)).subscribe({
         next: (state) => {
           emissionCount++;
@@ -197,15 +202,21 @@ async function main() {
           const up = state.unshielded.progress as any;
           const si = sp.appliedIndex ?? 0n;
           const di = dp.appliedIndex ?? 0n;
-          console.log(`  [${elapsed}s] #${emissionCount} S:${si} D:${di} U:${up?.appliedIndex ?? 'err'}`);
+          const dustBal = state.dust.balance(new Date());
+          console.log(`  [${elapsed}s] #${emissionCount} S:${si} D:${di} DUST:${dustBal.toString()} U:${up?.appliedIndex ?? 'err'}`);
 
-          // Wait for shielded wallet to be caught up (index stable for 2 consecutive checks)
-          const isCaughtUp = si > lastAppliedIndex;
-          if (!isCaughtUp && si > 0n && emissionCount > 2) {
-            console.log('Shielded wallet fully synced (index stable).');
+          // Wait for dust wallet to stabilize
+          if (di === lastDustIndex && di > 0n) {
+            dustStableCount++;
+          } else {
+            dustStableCount = 0;
+          }
+          lastDustIndex = di;
+
+          if (dustStableCount >= DUST_STABLE_REQUIRED) {
+            console.log('Dust wallet synced (index stable).');
             sub.unsubscribe(); res();
           }
-          lastAppliedIndex = si;
         },
         error: (err) => { sub.unsubscribe(); rej(err); },
       });
@@ -213,7 +224,7 @@ async function main() {
         sub.unsubscribe();
         console.log('Sync timeout — proceeding with current state.');
         res();
-      }, 600_000);
+      }, 900_000);
     });
   } catch (err: any) {
     console.log(`Sync error: ${err.message}`);
@@ -226,15 +237,18 @@ async function main() {
   const shieldedBalances = state.shielded.balances;
   const nightBalance = Object.values(shieldedBalances).reduce((a, b) => a + b, 0n);
   const dustBalance = state.dust.balance(new Date());
+  const unshieldedBalances = (state.unshielded as any).balances ?? {};
+  const dustCoins = (state.dust as any).availableCoins ?? [];
   console.log(`Shielded balances: ${JSON.stringify(Object.fromEntries(Object.entries(shieldedBalances).map(([k, v]) => [k, v.toString()])))}`);
+  console.log(`Unshielded balances: ${JSON.stringify(Object.fromEntries(Object.entries(unshieldedBalances).map(([k, v]) => [k, String(v)])))}`);
   console.log(`tNIGHT (shielded total): ${nightBalance}`);
-  console.log(`tDUST:  ${dustBalance}\n`);
+  console.log(`tDUST (balance):  ${dustBalance}`);
+  console.log(`DUST coins count: ${dustCoins.length}`);
+  if (dustCoins.length > 0) console.log(`DUST coins: ${JSON.stringify(dustCoins.map((c: any) => ({ id: c.coinId?.slice(0, 20), value: String(c.value) })))}`);
+  console.log('');
 
-  if (nightBalance === 0n && dustBalance === 0n) {
-    console.log('WARNING: No balance detected. Deploy will likely fail at tx balancing.\n');
-  } else if (dustBalance === 0n) {
-    console.log('WARNING: No tDUST. Deploy needs tDUST for fees.\n');
-  }
+  // ─── 4b. Skip DUST registration — SDK can't see unshielded UTXOs ──
+  console.log('DUST registration skipped (SDK unshielded sync bug). Proceeding to deploy...\n');
 
   // ─── 5. Set up providers ─────────────────────────────────────────
   const publicDataProvider = indexerPublicDataProvider(PREPROD.indexerHttpUrl, PREPROD.indexerWsUrl);
@@ -289,6 +303,7 @@ async function main() {
       console.log(`  OK: ${deployed.address}`);
     } catch (err: any) {
       console.error(`  FAIL: ${err.message}`);
+      console.error(`  Full error:`, JSON.stringify(err, Object.getOwnPropertyNames(err), 2)?.slice(0, 2000));
     }
   }
 

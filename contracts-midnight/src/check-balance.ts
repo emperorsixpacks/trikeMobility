@@ -29,8 +29,8 @@ const facade = await WalletFacade.init({
   configuration: {
     networkId: getNetworkId(),
     indexerClientConnection: {
-      indexerHttpUrl: 'https://indexer.preprod.midnight.network/api/v4/graphql',
-      indexerWsUrl: 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws',
+      indexerHttpUrl: 'https://indexer.preprod.midnight.network/api/v3/graphql',
+      indexerWsUrl: 'wss://indexer.preprod.midnight.network/api/v3/graphql/ws',
     },
     provingServerUrl: new URL('http://localhost:6300'),
     relayURL: new URL('wss://rpc.preprod.midnight.network'),
