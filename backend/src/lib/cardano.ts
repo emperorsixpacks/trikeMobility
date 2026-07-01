@@ -66,3 +66,40 @@ export async function getBalance(addr: string): Promise<{ lovelace: number; asse
   }
   return { lovelace, assets };
 }
+
+// ---------------------------------------------------------------------------
+// PlutusV3 datum reading — reads inline datums from script UTxOs
+// ---------------------------------------------------------------------------
+
+export interface ScriptUtxo {
+  tx_hash: string;
+  output_index: number;
+  amount: AssetInfo[];
+  inline_datum?: string;
+  data_hash?: string;
+}
+
+/** Read UTxOs at a Plutus script address (with inline datums). */
+export async function getScriptUtxos(scriptAddr: string): Promise<ScriptUtxo[]> {
+  return bfGet(`/addresses/${scriptAddr}/utxos`);
+}
+
+/** Read the first inline datum at a script address as hex. */
+export async function readDatumHex(scriptAddr: string): Promise<string | null> {
+  const utxos = await getScriptUtxos(scriptAddr);
+  for (const u of utxos) {
+    const d = (u as unknown as Record<string, unknown>).inline_datum;
+    if (typeof d === "string") return d;
+    // If datum is referenced by hash, fetch it
+    const dh = (u as unknown as Record<string, unknown>).data_hash;
+    if (typeof dh === "string") {
+      try {
+        const datumData = await bfGet<{ cbor_hex: string }>(`/scripts/datum/${dh}`);
+        return datumData.cbor_hex;
+      } catch {
+        // datum hash lookup failed, skip
+      }
+    }
+  }
+  return null;
+}

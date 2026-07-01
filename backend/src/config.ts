@@ -31,6 +31,11 @@ export const config = {
   cardanoPolicyId: process.env.CARDANO_POLICY_ID ?? "",
   cardanoTokenName: process.env.CARDANO_TOKEN_NAME ?? "TRK-1",
 
+  // --- Cardano On-Chain Validators (PlutusV3) ---
+  cardanoUserRegistryAddress: process.env.CARDANO_USER_REGISTRY ?? "",
+  cardanoPrivateInvestmentAddress: process.env.CARDANO_PRIVATE_INVESTMENT ?? "",
+  cardanoYieldVaultAddress: process.env.CARDANO_YIELD_VAULT ?? "",
+
   // --- Paycrest fiat bridge (API-only, no EVM) ---
   paycrestBase: process.env.PAYCREST_BASE ?? "https://api.paycrest.io/v1",
   paycrestApiKey: process.env.PAYCREST_API_KEY ?? "",

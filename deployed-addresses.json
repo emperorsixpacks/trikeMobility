@@ -24,6 +24,26 @@
     ],
     "wallet_address": "addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd"
   },
+  "contracts": {
+    "user_registry": {
+      "validator_hash": "67a35a64a6b04a17d0eccdf6a4eaa791f3b1d71b60de8016eebd88d8",
+      "script_address": "addr_test1wpn6xkny56cy597sanxldf8257gl8vwhrdsdaqqka67c3kqv9zfcr",
+      "fund_tx": "2ae5b945e4a6f6f9a6e61a10290d5310ea1427a914706c2dd51bb86425312552",
+      "explorer": "https://preprod.cardanoscan.io/transaction/2ae5b945e4a6f6f9a6e61a10290d5310ea1427a914706c2dd51bb86425312552"
+    },
+    "private_investment": {
+      "validator_hash": "ab85916e28be69451492052d5bae1317209b4150d1eb2ea9188c5e93",
+      "script_address": "addr_test1wz4ctytw9zlxj3g5jgzj6kawzvtjpx6p2rg7kt4frzx9aycln3qjr",
+      "fund_tx": "65c2a9ce370086d69605acbd5808078b0d0f1d87ec5f1ddb7838efc5216b58c1",
+      "explorer": "https://preprod.cardanoscan.io/transaction/65c2a9ce370086d69605acbd5808078b0d0f1d87ec5f1ddb7838efc5216b58c1"
+    },
+    "yield_vault": {
+      "validator_hash": "42af36b419e48ebbc2e48519dbdb6ae2858d58831aef3446add016aa",
+      "script_address": "addr_test1wpp27d45r8jgaw7zujz3nk7mdt3gtr2csvdw7dzx4hgpd2satak68",
+      "fund_tx": "11b6502e1db533b24d141720bb2ac499d1530bca13eff4e24f7fb0450d244315",
+      "explorer": "https://preprod.cardanoscan.io/transaction/11b6502e1db533b24d141720bb2ac499d1530bca13eff4e24f7fb0450d244315"
+    }
+  },
   "midnight": {
     "status": "pending"
   }
