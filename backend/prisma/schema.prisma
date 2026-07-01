@@ -22,10 +22,11 @@ model User {
   address       String?
   pinHash       String?  // hashed 4-digit payment PIN
 
-  // Embedded Midnight wallet — auto-created on signup.
-  // On Midnight, the "wallet address" is derived from the seed (not a public key).
-  walletAddress String   @unique  // Midnight address (derived from seed)
-  encryptedKey  String            // AES-256-GCM encrypted Midnight seed
+  // Server-managed Cardano HD wallet.
+  // Derivation: HMAC-SHA256(master_seed, walletIndex) → payment key → address.
+  // Master seed lives in .env (CARDANO_MASTER_SEED), never in DB.
+  walletIndex     Int      @default(-1) @unique  // HD derivation index (-1 = unassigned)
+  walletAddress   String   @unique  // Cardano Shelley address (derived, not stored raw)
 
   // KYC commitment hash (on Midnight UserRegistry contract).
   // The raw KYC data never touches the server — only the commitment.

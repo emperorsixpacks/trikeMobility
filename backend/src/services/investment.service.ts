@@ -178,7 +178,7 @@ export async function buyShares(userId: number, tricycleId: number, shares: numb
   const available = pool.totalShares - pool.sharesSold;
   if (BigInt(shares) > available) throw new InvestmentError("not_enough_shares");
 
-  const result = await chainInvest(user.encryptedKey, tricycleId, BigInt(shares));
+  const result = await chainInvest(user.walletIndex, tricycleId, BigInt(shares));
 
   await prisma.investment.create({
     data: {
@@ -207,7 +207,7 @@ export async function claim(userId: number, tricycleId: number) {
   });
   if (!meta) throw new InvestmentError("nothing_to_claim");
 
-  const txHash = await chainClaim(user.encryptedKey, tricycleId);
+  const txHash = await chainClaim(user.walletIndex, tricycleId);
 
   await prisma.investment.create({
     data: {

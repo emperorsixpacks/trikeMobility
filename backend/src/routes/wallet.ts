@@ -3,52 +3,48 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import { requireAuth, type AuthedRequest } from "../middleware/auth.js";
+import { getWalletBalance } from "../lib/cardano-wallet.js";
 
 const router = Router();
 
-async function loadWallet(userId: number) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) return null;
-  return { address: user.walletAddress, encryptedKey: user.encryptedKey };
-}
-
-// On Midnight, balances are private. The wallet endpoint returns the
-// commitment-based status instead of public balances.
+// GET /wallet/balance — real Cardano balance via Blockfrost
 router.get("/balance", requireAuth, async (req: AuthedRequest, res) => {
-  const wallet = await loadWallet(req.userId!);
-  if (!wallet) return res.status(404).json({ error: "not_found" });
+  const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+  if (!user) return res.status(404).json({ error: "not_found" });
 
-  // Count the user's investments from the DB (on-chain amounts are private)
+  const balance = await getWalletBalance(user.walletAddress);
+
+  // Count investments from DB
   const investments = await prisma.investment.findMany({
     where: { userId: req.userId!, action: "invest" },
   });
-
   const totalInvested = investments.reduce(
     (sum, inv) => sum + parseFloat(inv.amountUsdc),
     0,
   );
 
   res.json({
-    address: wallet.address,
-    // On Midnight, balances are private — we show DB-tracked totals
+    address: user.walletAddress,
+    lovelace: balance.lovelace,
+    ada: (balance.lovelace / 1_000_000).toFixed(2),
+    assets: balance.assets,
     totalInvestedUsdc: String(totalInvested),
     investmentCount: investments.length,
-    privacyEnabled: true,
+    network: "cardano-preprod",
+    explorer: `https://preprod.cardanoscan.io/address/${user.walletAddress}`,
   });
 });
 
-// Dev fund: on Midnight, this creates a test commitment instead of minting tokens.
+// POST /wallet/dev-fund — record a deposit (for demo)
 const fundSchema = z.object({ amountUsdc: z.string().regex(/^\d+(\.\d{1,6})?$/) });
 
 router.post("/dev-fund", requireAuth, async (req: AuthedRequest, res) => {
   const parsed = fundSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "invalid_input" });
 
-  const wallet = await loadWallet(req.userId!);
-  if (!wallet) return res.status(404).json({ error: "not_found" });
+  const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+  if (!user) return res.status(404).json({ error: "not_found" });
 
-  // On Midnight, this would deposit into the YieldVault via ZK proof.
-  // For now, record it in the DB.
   await prisma.deposit.create({
     data: {
       userId: req.userId!,
@@ -59,13 +55,13 @@ router.post("/dev-fund", requireAuth, async (req: AuthedRequest, res) => {
   });
 
   res.json({
-    message: "Deposit recorded (Midnight ZK commitment)",
+    message: "Deposit recorded",
     amountUsdc: parsed.data.amountUsdc,
+    walletAddress: user.walletAddress,
   });
 });
 
-// Withdraw: on Midnight, this would be a shielded transfer via ZK proof.
-// For now, record the intent in the DB.
+// POST /wallet/withdraw-crypto
 const withdrawSchema = z.object({
   to: z.string().min(1),
   amountUsdc: z.string().regex(/^\d+(\.\d{1,6})?$/),
@@ -92,8 +88,6 @@ router.post("/withdraw-crypto", requireAuth, async (req: AuthedRequest, res) => 
     });
   }
 
-  // On Midnight, the withdrawal would be a private ZK transfer.
-  // For now, record the withdrawal intent.
   await prisma.deposit.create({
     data: {
       userId: req.userId!,
@@ -104,8 +98,9 @@ router.post("/withdraw-crypto", requireAuth, async (req: AuthedRequest, res) => 
   });
 
   res.json({
-    message: "Withdrawal recorded (Midnight ZK commitment)",
+    message: "Withdrawal recorded",
     amountUsdc,
+    walletAddress: user.walletAddress,
   });
 });
 

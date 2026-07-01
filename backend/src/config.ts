@@ -31,6 +31,9 @@ export const config = {
   cardanoPolicyId: process.env.CARDANO_POLICY_ID ?? "",
   cardanoTokenName: process.env.CARDANO_TOKEN_NAME ?? "TRK-1",
 
+  // --- Cardano HD Wallet (server-managed) ---
+  cardanoMasterSeed: process.env.CARDANO_MASTER_SEED ?? "",
+
   // --- Cardano On-Chain Validators (PlutusV3) ---
   cardanoUserRegistryAddress: process.env.CARDANO_USER_REGISTRY ?? "",
   cardanoPrivateInvestmentAddress: process.env.CARDANO_PRIVATE_INVESTMENT ?? "",

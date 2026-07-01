@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import { config } from "../config.js";
-import { createEmbeddedWallet } from "../services/wallet.js";
+import { provisionWallet } from "../services/wallet.js";
 import { requireAuth, type AuthedRequest } from "../middleware/auth.js";
 
 const router = Router();
@@ -57,7 +57,7 @@ router.post("/register", async (req, res) => {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return res.status(409).json({ error: "email_taken" });
 
-  const wallet = createEmbeddedWallet();
+  const wallet = await provisionWallet();
   const user = await prisma.user.create({
     data: {
       email,
@@ -66,8 +66,8 @@ router.post("/register", async (req, res) => {
       fullName: fullName ?? null,
       phone: phone ?? null,
       pinHash: pin ? await bcrypt.hash(pin, 10) : null,
-      walletAddress: wallet.address,
-      encryptedKey: wallet.encryptedKey,
+      walletIndex: wallet.walletIndex,
+      walletAddress: wallet.walletAddress,
     },
   });
 

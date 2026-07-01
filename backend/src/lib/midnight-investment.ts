@@ -3,7 +3,6 @@
 
 import { config } from "../config.js";
 import { getContractAddresses, type ContractAddresses } from "./midnight.js";
-import { decrypt } from "./crypto.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -156,12 +155,11 @@ export async function pendingYieldRaw(
  * 4. No one can see how much was invested or by whom
  */
 export async function invest(
-  encryptedKey: string,
+  walletIndex: number,
   tricycleId: number,
   shares: bigint,
 ): Promise<InvestResult> {
   const addrs = getContractAddresses();
-  const seed = decrypt(encryptedKey);
 
   // Build the private investment data:
   // Client encodes: tricycleId || shares || random nonce
@@ -171,7 +169,7 @@ export async function invest(
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
-  const commitmentData = `${tricycleId}:${shares}:${seed}:${nonceHex}`;
+  const commitmentData = `${tricycleId}:${shares}:${walletIndex}:${nonceHex}`;
 
   // Call the Midnight invest circuit via the proof server.
   // This generates a ZK proof that the commitment is valid.
@@ -192,7 +190,7 @@ export async function invest(
  * On Midnight, yield amounts are private — computed client-side.
  */
 export async function claimYield(
-  _encryptedKey: string,
+  walletIndex: number,
   tricycleId: number,
 ): Promise<string> {
   const addrs = getContractAddresses();
