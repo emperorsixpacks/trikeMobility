@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EyeClosed, EyeIcon } from "lucide-react";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -27,10 +27,16 @@ type FormValues = z.infer<typeof formSchema>;
 export default function LoginForm() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login } = useAuth();
+    const { login, isAuthenticated, user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            navigate(user.role === "investor" ? "/investor" : "/driver", { replace: true });
+        }
+    }, [isAuthenticated, user, navigate]);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),

@@ -15,7 +15,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import pin from "@/assets/pin.svg";
 import back from "@/assets/back.svg";
 import warning from "@/assets/warning.svg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EyeClosed, EyeIcon } from "lucide-react";
 import { PinInput } from "@/components/ui/pinInput";
 import { ApiError } from "@/lib/api";
@@ -54,11 +54,17 @@ export default function CreateAccountForm() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const role = (searchParams.get("role") === "investor" ? "investor" : "driver") as "driver" | "investor";
-    const { register: registerUser } = useAuth();
+    const { register: registerUser, isAuthenticated, user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showPin, setShowPin] = useState(false);
+
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            navigate(user.role === "investor" ? "/investor" : "/driver", { replace: true });
+        }
+    }, [isAuthenticated, user, navigate]);
 
 
     const form = useForm<z.infer<typeof formSchema>>({

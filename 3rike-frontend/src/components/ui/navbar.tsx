@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/auth';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const navLinks = [
     { label: "Features", href: "#features" },
@@ -69,15 +72,40 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* Contact Button — Desktop */}
-          <div className="hidden lg:block">
-            <button
-              type="button"
-              className="bg-[#829E04] text-white text-lg font-medium px-8 py-3 cursor-pointer hover:bg-[#6f8703] transition-colors"
-            >
-              Contact us
-            </button>
-          </div>
+          {/* Auth Buttons — Desktop */}
+          {isAuthenticated ? (
+            <div className="hidden lg:flex items-center gap-6">
+              <Link
+                to={`/${user?.role || 'driver'}`}
+                className="text-[#1A1A1A] text-lg font-medium hover:text-[#829E04] transition-colors cursor-pointer"
+              >
+                Dashboard
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                className="bg-[#829E04] text-white text-lg font-medium px-8 py-3 cursor-pointer hover:bg-[#6f8703] transition-colors"
+              >
+                Log out
+              </button>
+            </div>
+          ) : (
+            <div className="hidden lg:flex items-center gap-6">
+              <Link
+                to="/login"
+                className="text-[#1A1A1A] text-lg font-medium hover:text-[#829E04] transition-colors cursor-pointer"
+              >
+                Log in
+              </Link>
+              <button
+                type="button"
+                onClick={() => navigate("/role-select")}
+                className="bg-[#829E04] text-white text-lg font-medium px-8 py-3 cursor-pointer hover:bg-[#6f8703] transition-colors"
+              >
+                Sign up
+              </button>
+            </div>
+          )}
 
           {/* Mobile Menu Toggle */}
           <button
@@ -124,9 +152,9 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Bottom CTA */}
+        {/* Bottom CTA / Auth */}
         <div
-          className="px-8 pb-12"
+          className="px-8 pb-12 flex flex-col gap-4"
           style={{
             transitionDelay: isOpen ? '400ms' : '0ms',
             transform: isOpen ? 'translateY(0)' : 'translateY(20px)',
@@ -134,12 +162,53 @@ export default function Navbar() {
             transition: 'all 0.4s ease-out',
           }}
         >
-          <button
-            type="button"
-            className="bg-[#829E04] text-white text-xl font-medium py-5 w-full cursor-pointer hover:bg-[#6f8703] transition-colors rounded-xl"
-          >
-            Contact us
-          </button>
+          {isAuthenticated ? (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  navigate(`/${user?.role || 'driver'}`);
+                }}
+                className="border border-[#829E04] text-[#829E04] text-xl font-medium py-4 w-full cursor-pointer hover:bg-[#829E04]/10 transition-colors rounded-xl text-center"
+              >
+                Go to Dashboard
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  void logout();
+                }}
+                className="bg-[#829E04] text-white text-xl font-medium py-4 w-full cursor-pointer hover:bg-[#6f8703] transition-colors rounded-xl text-center"
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  navigate("/login");
+                }}
+                className="border border-[#829E04] text-[#829E04] text-xl font-medium py-4 w-full cursor-pointer hover:bg-[#829E04]/10 transition-colors rounded-xl text-center"
+              >
+                Log in
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  navigate("/role-select");
+                }}
+                className="bg-[#829E04] text-white text-xl font-medium py-4 w-full cursor-pointer hover:bg-[#6f8703] transition-colors rounded-xl text-center"
+              >
+                Sign up / Get Started
+              </button>
+            </>
+          )}
         </div>
       </div>
     </>

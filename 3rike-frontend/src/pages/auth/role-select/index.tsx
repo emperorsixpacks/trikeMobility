@@ -2,9 +2,18 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import MobileFrame from "@/components/ui/mobile-frame";
 import { Car, TrendingUp } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { useEffect } from "react";
 
 export default function RoleSelect() {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate(user.role === "investor" ? "/investor" : "/driver", { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   return (
     <MobileFrame innerClassName="flex flex-col justify-center items-center px-6">
