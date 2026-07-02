@@ -119,7 +119,13 @@ def build_pool_datum(tricycle_id: str, total_shares: int, shares_sold: int, pric
 
 
 def build_registry_datum(authority_hash: str, is_verified: bool):
-    return RegistryDatum(bytes.fromhex(authority_hash) if authority_hash else b"", is_verified)
+    if not authority_hash:
+        h = b""
+    elif all(c in "0123456789abcdef" for c in authority_hash.lower()) and len(authority_hash) % 2 == 0:
+        h = bytes.fromhex(authority_hash)
+    else:
+        h = authority_hash.encode()
+    return RegistryDatum(h, is_verified)
 
 
 def build_vault_datum(total_assets: int, total_shares: int, share_price: int):
