@@ -157,7 +157,7 @@ export default function LoginForm() {
                         <div className="text-center text-sm pb-5">
                             New to 3rike?{" "}
                             <Link
-                                to="/create-account-rider"
+                                to="/role-select"
                                 className="text-[#01C259] font-extrabold"
                             >
                                 Create an account
