@@ -1,11 +1,11 @@
 # 3rike Mobility — Demo Video Script
-## HD Wallets + Investor Flow
+## HD Wallets + Investor Flow (Frontend UI Edition)
 
 ---
 
 ### SCENE 1: Introduction (10 sec)
 > "3rike Mobility lets everyday investors fund tricycle drivers in Africa.
-> Today I'll show the HD wallet system and walk through the investor flow live on Cardano Preprod."
+> Today I'll show the HD wallet system and walk through the investor flow live on the 3rike Web App connected to Cardano Preprod."
 
 ---
 
@@ -20,99 +20,76 @@
 ---
 
 ### SCENE 3: Register an Investor (20 sec)
-> "Let's register a new investor. I'll hit the API."
+> "Let's register a new investor. I'll navigate to our signup screen."
 
-**[SHOW]** Run this in terminal:
-```bash
-curl -s -X POST http://localhost:8080/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"investor_demo@3rike.com","password":"demo123","role":"investor","fullName":"Demo Investor"}' | python3 -m json.tool
-```
-
-> "Notice the response — the server returned a wallet address and wallet index.
-> That address was derived on the fly from the master seed. The user never sees a private key."
-
-**[POINT AT]** `walletAddress` and `walletIndex` in the JSON response.
+**[SHOW]** Open browser at `http://localhost:5173/role-select` (or direct signup page `/create-account`).
+- Select **Investor** role.
+- Fill out the form:
+  - **Email**: `investor_demo@3rike.com`
+  - **Full Name**: `Demo Investor`
+  - **Password**: `demo123`
+- Click **Create Account**.
 
 ---
 
 ### SCENE 4: Wallet Balance (15 sec)
-> "Let's check the wallet balance — this reads real on-chain data from Blockfrost."
+> "Once registered, we are taken straight to the Investor Dashboard. 
+> Here, you can see the user's newly derived on-chain Cardano wallet address."
 
-**[SHOW]** Run:
-```bash
-curl -s http://localhost:8080/wallet/balance \
-  -H "Authorization: Bearer <TOKEN>" | python3 -m json.tool
-```
-
-> "Zero ADA — the wallet was just created. In production, users would deposit via Paycrest fiat bridge.
-> For this demo, our admin wallet funds transactions directly."
+**[SHOW]** Investor Dashboard screen (`http://localhost:5173/investor`).
+- Point at the **Portfolio Value** (currently showing `$ 0`).
+- Navigate to the **Wallet** tab at the bottom to show the derived Cardano address and balance status.
+- Mention: *"In production, users deposit via the Paycrest fiat bridge. For this demo, our wallet is ready to browse the marketplace."*
 
 ---
 
 ### SCENE 5: Browse Tricycles (15 sec)
-> "Now let's see what's available for investment. This reads pool datums directly from our PlutusV3 smart contract on Cardano."
+> "Let's browse active tricycles. This loads real pool datums directly from our PlutusV3 smart contract on Cardano."
 
-**[SHOW]** Run:
-```bash
-curl -s http://localhost:8080/investment/tricycles | python3 -m json.tool
-```
-
-> "TRK-001 — a Bajaj RE in Lagos. $5 per share, 36 total shares, 2 already sold.
-> TRK-002 and TRK-003 — available in Ibadan and Accra.
-> All of this data is live from the blockchain, not from a database."
-
-**[POINT AT]** `sharesSold`, `totalShares`, `pricePerShare`.
+**[SHOW]** Click **Browse Marketplace** button (navigating to `http://localhost:5173/investor/investment`).
+- Point at the active tricycle cards:
+  - **TRK-001**: Bajaj RE in Lagos ($5 per share, 36 total shares, 0 sold).
+  - **TRK-002** and **TRK-003** in Ibadan and Accra.
+- Highlight the real-time funding percentage, shares available, and projected APR.
 
 ---
 
 ### SCENE 6: Invest On-Chain (30 sec)
 > "Let's buy 2 shares of TRK-001. This builds and submits a real PlutusV3 spend transaction."
 
-**[SHOW]** Run:
-```bash
-curl -s -X POST http://localhost:8080/investment/invest \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <TOKEN>" \
-  -d '{"tricycleId":1,"shares":2}' | python3 -m json.tool
-```
+**[SHOW]** 
+- Click on **TRK-001** to open the investment sheet/modal.
+- Input **2** in the shares field.
+- Click **Invest Now**.
+- Show the loading spinner and then the success confirmation toast: *"Successfully purchased 2 shares!"*
 
-> "Transaction confirmed. The pool UTxO was spent and a new one created with shares_sold updated from 0 to 2.
-> This is a real Cardano transaction — let me open it on CardanoScan."
+> "This is a real Cardano Preprod transaction. Let's look at the transaction hash on CardanoScan."
 
-**[SHOW]** Open `https://preprod.cardanoscan.io/transaction/<TX_HASH>` in browser.
-- Point at the Plutus script input
-- Point at the datum change (shares_sold: 0 → 2)
-- Point at the script address
+**[SHOW]** Click the transaction link or copy hash to open `https://preprod.cardanoscan.io/transaction/<TX_HASH>` in browser:
+- Point at the Plutus script input.
+- Point at the datum change (`shares_sold` updated from `0` to `2`).
+- Point at the script address.
 
 ---
 
 ### SCENE 7: Portfolio (15 sec)
-> "The investor can now see their holdings."
+> "Back in the app, the investor's dashboard and portfolio update instantly to reflect their holdings."
 
-**[SHOW]** Run:
-```bash
-curl -s http://localhost:8080/investment/portfolio \
-  -H "Authorization: Bearer <TOKEN>" | python3 -m json.tool
-```
-
-> "2 shares in TRK-001, valued at $10. The portfolio tracks investments across all tricycles."
+**[SHOW]** Navigate to the **My Portfolio** screen (`http://localhost:5173/investor/investment/portfolio`).
+- Point at the **Portfolio Value** showing `$ 10` ($5 * 2 shares).
+- Point at **TRK-001** in the holdings list, displaying 2 shares and its projected APR.
 
 ---
 
 ### SCENE 8: Claim Yield (25 sec)
-> "After some time, earnings accumulate in the yield vault. Let's claim."
+> "As the tricycle driver makes weekly repayments, yield accumulates. Let's claim our earnings."
 
-**[SHOW]** Run:
-```bash
-curl -s -X POST http://localhost:8080/investment/claim-yield \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <TOKEN>" \
-  -d '{"tricycleId":1}' | python3 -m json.tool
-```
+**[SHOW]** 
+- Under the **TRK-001** holding in the Portfolio, look at the **Accumulated Yield**.
+- Click the **Claim Yield** button.
+- Show the success transaction confirmation.
 
-> "Another on-chain transaction — this one spends the yield vault UTxO and sends the payout to the investor's HD wallet.
-> The vault datum is updated with reduced total_assets."
+> "This executes another on-chain transaction that spends the yield vault UTxO, updating its datum and sending the earnings straight to our HD wallet."
 
 **[SHOW]** Open the claim transaction on CardanoScan.
 
@@ -120,38 +97,6 @@ curl -s -X POST http://localhost:8080/investment/claim-yield \
 
 ### SCENE 9: Close (10 sec)
 > "To recap:
-> One master seed, deterministic per-user HD wallets, no wallet extensions needed.
-> Invest and claim are real PlutusV3 transactions on Cardano.
-> Everything is verifiable on-chain.
+> We registered, saw our derived HD wallet, purchased fractional shares on-chain, and claimed yield—all through the 3rike Web App UI.
+> One master seed, deterministic wallets, and zero complex browser extensions.
 > That's 3rike Mobility."
-
----
-
-## Quick Copy-Paste Commands
-
-All assume `TOKEN` is set. After registering:
-```bash
-export TOKEN=$(curl -s -X POST http://localhost:8080/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"demo_'$(date +%s)'@3rike.com","password":"demo123","role":"investor"}' \
-  | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
-
-# Browse
-curl -s http://localhost:8080/investment/tricycles | python3 -m json.tool
-
-# Invest
-curl -s -X POST http://localhost:8080/investment/invest \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"tricycleId":1,"shares":2}' | python3 -m json.tool
-
-# Portfolio
-curl -s http://localhost:8080/investment/portfolio \
-  -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
-
-# Claim
-curl -s -X POST http://localhost:8080/investment/claim-yield \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"tricycleId":1}' | python3 -m json.tool
-```
