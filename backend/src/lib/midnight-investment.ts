@@ -28,12 +28,21 @@ const BF_BASE = config.cardanoBlockfrostUrl;
 const BF_KEY = config.cardanoBlockfrostKey;
 
 async function bfGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${BF_BASE}${path}`, { headers: { project_id: BF_KEY } });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Blockfrost ${path}: ${res.status} ${text.slice(0, 200)}`);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15_000);
+  try {
+    const res = await fetch(`${BF_BASE}${path}`, {
+      headers: { project_id: BF_KEY },
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Blockfrost ${path}: ${res.status} ${text.slice(0, 200)}`);
+    }
+    return res.json() as Promise<T>;
+  } finally {
+    clearTimeout(timer);
   }
-  return res.json() as Promise<T>;
 }
 
 /** Decode a RawPlutusData inline datum (double-encoded CBOR). */
@@ -56,16 +65,18 @@ function decodeDatum(hexStr: string): { constructor: number; fields: unknown[] }
       decoded = cborDecode(decoded);
     }
 
-    // Should be CBORTag(127) with our datum
+    // CBORTag(121-127) → constructor = tag - 121
     if (
       decoded &&
       typeof decoded === "object" &&
       "tag" in decoded &&
-      (decoded as { tag: number }).tag === 127 &&
       "value" in decoded
     ) {
-      const fields = (decoded as { value: unknown[] }).value;
-      return { constructor: 0, fields };
+      const tag = (decoded as { tag: number }).tag;
+      if (tag >= 121 && tag <= 127) {
+        const fields = (decoded as { value: unknown[] }).value;
+        return { constructor: tag - 121, fields };
+      }
     }
     return null;
   } catch {
@@ -90,6 +101,13 @@ function cborDecode(buf: Uint8Array): unknown {
       const val = view.buf.readUInt32BE(view.pos);
       view.pos += 4;
       return val;
+    }
+    if (additionalInfo === 27) {
+      const hi = Number(view.buf.readUInt32BE(view.pos));
+      view.pos += 4;
+      const lo = Number(view.buf.readUInt32BE(view.pos));
+      view.pos += 4;
+      return hi * 0x100000000 + lo;
     }
     throw new Error("Unsupported uint size");
   }
@@ -127,6 +145,26 @@ function cborDecode(buf: Uint8Array): unknown {
       return str;
     }
 
+    // Indefinite length
+    if (additionalInfo === 31) {
+      if (major === 4) {
+        const arr: unknown[] = [];
+        while (view.buf[view.pos] !== 0xff) arr.push(decodeItem());
+        view.pos++; // skip break
+        return arr;
+      }
+      if (major === 5) {
+        const map: Record<number, unknown> = {};
+        while (view.buf[view.pos] !== 0xff) {
+          const key = decodeItem() as number;
+          map[key] = decodeItem();
+        }
+        view.pos++; // skip break
+        return map;
+      }
+      throw new Error("Unsupported indefinite length");
+    }
+
     // Array (major 4)
     if (major === 4) {
       const len = readUint(additionalInfo);
@@ -159,17 +197,6 @@ function cborDecode(buf: Uint8Array): unknown {
       if (additionalInfo === 21) return true;
       if (additionalInfo === 22) return null;
       throw new Error("Unsupported simple value");
-    }
-
-    // Indefinite length
-    if (additionalInfo === 31) {
-      if (major === 4) {
-        const arr: unknown[] = [];
-        while (view.buf[view.pos] !== 0xff) arr.push(decodeItem());
-        view.pos++; // skip break
-        return arr;
-      }
-      throw new Error("Unsupported indefinite length");
     }
 
     throw new Error(`Unsupported: major=${major}, info=${additionalInfo}`);
@@ -258,39 +285,121 @@ export async function getPool(id: number): Promise<OnchainPool> {
   return pool;
 }
 
-export async function sharesOf(_id: number, _address: string): Promise<bigint> {
-  return 0n;
+export async function sharesOf(id: number, address: string): Promise<bigint> {
+  if (!isContractsDeployed()) return 0n;
+  const pools = await readPoolDatums();
+  const vehicleId = `TRK-${String(id).padStart(3, "0")}`;
+  const pool = pools.get(vehicleId);
+  if (!pool) return 0n;
+  return pool.sharesSold;
 }
 
-export async function pendingYieldRaw(_id: number, _address: string): Promise<bigint> {
-  return 0n;
+export async function pendingYieldRaw(id: number, address: string): Promise<bigint> {
+  if (!isContractsDeployed()) return 0n;
+  try {
+    const u = await bfGet<{ amount: { unit: string; quantity: string }[] }[]>(
+      `/addresses/${config.cardanoYieldVaultAddress}/utxos`,
+    );
+    if (!u.length) return 0n;
+    const lovelace = u[0].amount.find((a) => a.unit === "lovelace");
+    return lovelace ? BigInt(lovelace.quantity) : 0n;
+  } catch {
+    return 0n;
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Investment writes (record in DB, build tx later)
+// Investment writes — call Python cardano_tx.py for PlutusV3 spend
 // ---------------------------------------------------------------------------
+
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+const execFileAsync = promisify(execFile);
+
+const CARDANO_TX_PY = process.env.CARDANO_TX_PY ?? `${process.cwd()}/../contracts-cardano/cardano_tx.py`;
 
 export async function invest(
-  walletIndex: number,
+  _walletIndex: number,
   tricycleId: number,
   shares: bigint,
 ): Promise<InvestResult> {
-  // For now, record the investment intent in the DB.
-  // Full on-chain spend+write requires building a PlutusV3 transaction.
-  const nonce = new Uint8Array(32);
-  globalThis.crypto.getRandomValues(nonce);
-  const commitment = Array.from(nonce).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const vehicleId = `TRK-${String(tricycleId).padStart(3, "0")}`;
+
+  const { stdout, stderr } = await execFileAsync("python3", [
+    CARDANO_TX_PY, "invest", vehicleId, String(shares),
+  ], { timeout: 60_000 });
+
+  if (stderr) console.error("cardano_tx.py stderr:", stderr);
+
+  const trimmed = stdout.trim();
+  if (!trimmed || trimmed.includes("ERROR") || trimmed.includes("FAILED")) {
+    throw new Error(`On-chain invest failed: ${trimmed || stderr}`);
+  }
+
+  // Parse JSON output: {"tx_hash": "...", "tricycle_id": "...", "shares": N}
+  let result: { tx_hash: string; tricycle_id: string; shares: number };
+  try {
+    result = JSON.parse(trimmed.split("\n").pop()!);
+  } catch {
+    throw new Error(`Bad output from invest: ${trimmed}`);
+  }
 
   return {
-    txHash: "",
-    costRaw: 0n,
-    commitment,
+    txHash: result.tx_hash,
+    costRaw: BigInt(shares) * (await getPool(tricycleId)).pricePerShareRaw,
+    commitment: result.tx_hash, // use real tx hash as commitment
   };
 }
 
 export async function claimYield(
-  walletIndex: number,
+  _walletIndex: number,
   tricycleId: number,
+  sharesToBurn: number = 1,
 ): Promise<string> {
-  return "";
+  if (!isContractsDeployed()) {
+    throw new Error("yield_vault_not_deployed");
+  }
+
+  const { stdout, stderr } = await execFileAsync("python3", [
+    CARDANO_TX_PY, "claim", String(sharesToBurn),
+  ], { timeout: 60_000 });
+
+  if (stderr) console.error("cardano_tx.py claim stderr:", stderr);
+
+  const trimmed = stdout.trim();
+  if (!trimmed || trimmed.includes("ERROR") || trimmed.includes("FAILED")) {
+    throw new Error(`On-chain yield claim failed: ${trimmed || stderr}`);
+  }
+
+  let result: { tx_hash: string };
+  try {
+    result = JSON.parse(trimmed.split("\n").pop()!);
+  } catch {
+    throw new Error(`Bad output from claim: ${trimmed}`);
+  }
+
+  return result.tx_hash;
+}
+
+// ---------------------------------------------------------------------------
+// KYC — write user_registry datum on-chain
+// ---------------------------------------------------------------------------
+
+export async function writeKycDatum(authorityHash: string, isVerified = true): Promise<string> {
+  const { stdout, stderr } = await execFileAsync("python3", [
+    CARDANO_TX_PY, "register", authorityHash, String(isVerified),
+  ], { timeout: 60_000 });
+
+  if (stderr) console.error("cardano_tx.py register stderr:", stderr);
+  const trimmed = stdout.trim();
+  if (!trimmed || trimmed.includes("ERROR") || trimmed.includes("FAILED")) {
+    throw new Error(`KYC write failed: ${trimmed || stderr}`);
+  }
+
+  try {
+    const result = JSON.parse(trimmed.split("\n").pop()!);
+    return result.tx_hash;
+  } catch {
+    throw new Error(`Bad output from register: ${trimmed}`);
+  }
 }

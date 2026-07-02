@@ -67,7 +67,7 @@ app.get("/contracts/status", async (_req, res) => {
     try {
       const utxos = await getScriptUtxos(addr);
       const lovelace = utxos.reduce((sum, u) => {
-        const coin = u.amount.find((a) => a.asset === "lovelace");
+        const coin = u.amount.find((a) => a.unit === "lovelace");
         return sum + (coin ? Number(coin.quantity) : 0);
       }, 0);
       status[name] = { funded: lovelace > 0, utxoCount: utxos.length, lovelace };

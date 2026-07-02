@@ -67,7 +67,7 @@ async function bfGet<T>(path: string): Promise<T> {
 }
 
 export interface AssetInfo {
-  asset: string;
+  unit: string;
   quantity: string;
 }
 
@@ -84,7 +84,7 @@ export async function getWalletBalance(address: string): Promise<WalletBalance> 
     let lovelace = 0;
     const assets: AssetInfo[] = [];
     for (const a of data.amount) {
-      if (a.asset === "lovelace") lovelace = Number(a.quantity);
+      if (a.unit === "lovelace") lovelace = Number(a.quantity);
       else assets.push(a);
     }
     return { lovelace, assets, address };

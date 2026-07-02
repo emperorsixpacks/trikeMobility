@@ -6,6 +6,7 @@ import { prisma } from "../db.js";
 import { config } from "../config.js";
 import { provisionWallet } from "../services/wallet.js";
 import { requireAuth, type AuthedRequest } from "../middleware/auth.js";
+import { writeKycDatum } from "../lib/midnight-investment.js";
 
 const router = Router();
 
@@ -70,6 +71,12 @@ router.post("/register", async (req, res) => {
       walletAddress: wallet.walletAddress,
     },
   });
+
+  // Write KYC datum to user_registry contract (fire-and-forget)
+  const kycHash = wallet.walletAddress.slice(0, 56); // use address as authority hash
+  writeKycDatum(kycHash, true).catch((err) =>
+    console.warn("KYC datum write failed (non-blocking):", err.message),
+  );
 
   res.status(201).json({ token: tokenFor(user.id), user: publicUser(user) });
 });

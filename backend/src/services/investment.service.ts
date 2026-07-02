@@ -138,7 +138,7 @@ export async function getPortfolio(userId: number): Promise<PortfolioView> {
       shares: data.shares,
       valueUsdc: String(data.investedUsdc),
       pendingYield: "0", // Private — computed client-side
-      projectedApr: aprFor(vehicleId, data.investedUsdc),
+      projectedApr: aprFor(vehicleId, 5),
     });
     totalInvested += data.investedUsdc;
   }
@@ -178,7 +178,7 @@ export async function buyShares(userId: number, tricycleId: number, shares: numb
   const available = pool.totalShares - pool.sharesSold;
   if (BigInt(shares) > available) throw new InvestmentError("not_enough_shares");
 
-  const result = await chainInvest(user.walletIndex, tricycleId, BigInt(shares));
+  const result = await chainInvest(user.walletIndex ?? 0, tricycleId, BigInt(shares));
 
   await prisma.investment.create({
     data: {
@@ -187,41 +187,53 @@ export async function buyShares(userId: number, tricycleId: number, shares: numb
       vehicleId: `TRK-${String(tricycleId).padStart(3, "0")}`,
       action: "invest",
       shares: String(shares),
-      amountUsdc: "0", // Private on Midnight
-      txHash: result.commitment,
+      amountUsdc: String((BigInt(shares) * pool.pricePerShareRaw) / 1_000_000n),
+      txHash: result.txHash || result.commitment,
     },
   });
 
   return {
-    commitment: result.commitment,
+    txHash: result.txHash,
     shares,
-    message: "Investment recorded via Midnight ZK commitment",
+    message: `Investment recorded on-chain. Tx: ${result.txHash.slice(0, 16)}...`,
   };
 }
 
 export async function claim(userId: number, tricycleId: number) {
   const user = await loadUser(userId);
 
-  const meta = await prisma.investment.findFirst({
+  const investments = await prisma.investment.findMany({
     where: { userId, tricycleId, action: "invest" },
   });
-  if (!meta) throw new InvestmentError("nothing_to_claim");
+  if (!investments.length) throw new InvestmentError("nothing_to_claim");
 
-  const txHash = await chainClaim(user.walletIndex, tricycleId);
+  const totalInvested = investments.reduce((sum, inv) => sum + Number(inv.shares ?? 0), 0);
+  const claims = await prisma.investment.findMany({
+    where: { userId, tricycleId, action: "claim" },
+  });
+  const totalClaimed = claims.reduce((sum, inv) => sum + Number(inv.shares ?? 1), 0);
+  const claimable = totalInvested - totalClaimed;
+  if (claimable <= 0) throw new InvestmentError("nothing_to_claim");
+
+  const sharesToClaim = Math.min(claimable, 1);
+  const txHash = await chainClaim(user.walletIndex, tricycleId, sharesToClaim);
 
   await prisma.investment.create({
     data: {
       userId,
       tricycleId,
-      vehicleId: meta.vehicleId,
+      vehicleId: investments[0].vehicleId,
       action: "claim",
-      amountUsdc: "0", // Private on Midnight
+      shares: String(sharesToClaim),
+      amountUsdc: "0",
       txHash,
     },
   });
 
   return {
-    message: "Yield claimed via Midnight ZK proof (amount is private)",
+    txHash,
+    sharesClaimed: sharesToClaim,
+    message: `Yield claimed on-chain. Tx: ${txHash.slice(0, 16)}...`,
   };
 }
 

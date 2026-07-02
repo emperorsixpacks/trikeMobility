@@ -21,7 +21,7 @@ async function bfGet<T>(path: string): Promise<T> {
 }
 
 export interface AssetInfo {
-  asset: string;
+  unit: string;
   quantity: string;
 }
 
@@ -52,7 +52,7 @@ export async function nftExistsAtAddress(
   assetId: string,
 ): Promise<boolean> {
   const utxos = await getAddressUtxos(addr);
-  return utxos.some((u) => u.amount.some((a) => a.asset === assetId && a.quantity === "1"));
+  return utxos.some((u) => u.amount.some((a) => a.unit === assetId && a.quantity === "1"));
 }
 
 /** Get the current ADA + asset balance at an address. */
@@ -61,7 +61,7 @@ export async function getBalance(addr: string): Promise<{ lovelace: number; asse
   let lovelace = 0;
   const assets: AssetInfo[] = [];
   for (const a of data.amount) {
-    if (a.asset === "lovelace") lovelace = Number(a.quantity);
+    if (a.unit === "lovelace") lovelace = Number(a.quantity);
     else assets.push(a);
   }
   return { lovelace, assets };

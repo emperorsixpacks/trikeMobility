@@ -97,7 +97,7 @@ export default function Wallet() {
                 <span className="text-sm font-light text-white/80 align-middle">USDC</span>
               </h1>
             )}
-            <p className="text-xs text-white/70 mt-2">Midnight Network · privacy-enabled wallet</p>
+            <p className="text-xs text-white/70 mt-2">Cardano Preprod · testnet wallet</p>
           </div>
         </div>
 
@@ -123,7 +123,7 @@ export default function Wallet() {
           <div className="bg-white border border-gray-100 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-1">
               <Lock className="w-3.5 h-3.5 text-[#909090]" />
-              <p className="text-[10px] text-[#909090] uppercase tracking-wider">Private</p>
+              <p className="text-[10px] text-[#909090] uppercase tracking-wider">On-chain</p>
             </div>
             <p className="text-base font-bold text-gray-900">{balance?.investmentCount ?? 0}</p>
             <p className="text-[10px] text-[#909090] mt-0.5">Investments</p>
@@ -133,7 +133,7 @@ export default function Wallet() {
         {/* Wallet address */}
         <div className="bg-[#F8FAFC] rounded-2xl p-4 mb-4">
           <p className="text-[10px] text-[#909090] uppercase tracking-wider mb-2">
-            Your Midnight address
+            Your Cardano Address (Preprod)
           </p>
           <div className="flex items-center gap-2">
             <code className="flex-1 text-[12px] text-gray-700 font-mono truncate">{short}</code>
@@ -150,8 +150,18 @@ export default function Wallet() {
               )}
             </button>
           </div>
+          {address && (
+            <a
+              href={`https://preprod.cardanoscan.io/address/${address}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] text-[#01C259] hover:underline mt-2 inline-block"
+            >
+              View on CardanoScan →
+            </a>
+          )}
           <p className="text-[10px] text-[#909090] mt-2">
-            Privacy-enabled: balances and transactions are shielded via ZK proofs
+            Cardano Preprod testnet · balances visible on-chain
           </p>
         </div>
 
@@ -160,7 +170,7 @@ export default function Wallet() {
           onClick={() => setDepositOpen(true)}
           className="h-12 bg-[#01C259] hover:bg-[#00a049] text-white rounded-xl font-medium cursor-pointer gap-2"
         >
-          <ArrowDownToLine className="w-4 h-4" /> Deposit crypto (USDC)
+          <ArrowDownToLine className="w-4 h-4" /> Fund Wallet (Dev Fund)
         </Button>
       </div>
 
