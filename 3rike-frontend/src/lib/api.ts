@@ -484,6 +484,7 @@ export function getTricycle(id: number): Promise<Tricycle> {
 
 export type InvestResult = {
   commitment: string;
+  txHash?: string;
   shares: number;
   message: string;
 };

@@ -81,7 +81,7 @@ export default function InvestmentApp() {
           />
           <h2 className="text-2xl font-extrabold text-black mb-2">Investment confirmed!</h2>
           <p className="text-sm text-[#909090] mb-1">
-            You bought {success.shares} {success.shares === 1 ? "share" : "share"} — recorded via ZK proof
+            You bought {success.shares} {success.shares === 1 ? "share" : "shares"} — recorded via ZK proof
           </p>
           <p className="text-xs text-[#909090] mb-8">
             {success.message}
@@ -93,6 +93,15 @@ export default function InvestmentApp() {
             >
               View my portfolio
             </Button>
+            {(success.txHash || success.commitment) && (
+              <Button
+                variant="outline"
+                onClick={() => window.open(`https://preprod.cardanoscan.io/transaction/${success.txHash || success.commitment}`, "_blank")}
+                className="w-full h-12 border-[#01C259] text-[#01C259] hover:bg-[#E9F8EE] rounded-2xl cursor-pointer"
+              >
+                View on CardanoScan
+              </Button>
+            )}
             <Button
               variant="ghost"
               onClick={() => {
