@@ -19,7 +19,7 @@ import MobileFrame from "@/components/ui/mobile-frame";
 
 const formSchema = z.object({
     email: z.string().email("Enter a valid email"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(1, "Password is required"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
