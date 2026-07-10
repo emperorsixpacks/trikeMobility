@@ -1,6 +1,0 @@
-.env
-broadcast/
-cache/
-out/
-# Vendored dependencies — re-fetch with ./setup.sh (keeps ~700 files out of git)
-lib/

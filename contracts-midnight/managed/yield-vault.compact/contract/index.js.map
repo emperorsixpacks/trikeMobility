@@ -1,8 +1,0 @@
-{
-  "version": 3,
-  "file": "index.js",
-  "sourceRoot": "../../../",
-  "sources": ["contracts/yield-vault.compact", "compiler/standard-library.compact"],
-  "names": [],
-  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAcA;;;;;;;;;;;;;MAYA,AAAA,OAWC;;;;;;;;;;;;;;;;;;;;;;OAAA;MAED,AAAA,cAMC;;;;;;;;;;;;;;;;;;;;;;OAAA;;;;;;;;;;GAxBA;EAPD;;;;;UAAY,SAAkB;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IAN9B;;;;;;;;;yEAAoC;IACpC;;;;;;;;;yEAAoC;IACpC;;;;;;;;;yEAAmC;IACnC;;;;;;;;;;yEAA+C;IAC/C;;;;;;;;;yEAAkC;UAGhC,KAAQ;0CACkC,SAAO;IADjD;;;;;;;2HAAA,KAAQ;;yEAAA;UAGR,KAAW;IAAX;;;;;;;2HAAA,KAAW;;yEAAA;UACX,KAAW;IAAX;;;;;;;2HAAA,KAAW;;yEAAA;UACX,KAAU;IAAV;;;;;;;2HAAA,KAAU;;yEAAA;;;;;;;GACX;ECrBD,AAAA,kBAAA;oEAAA;;;EDwBA,AAAA,wBAA2C;;0DAA3C,qBAA2C;;;;;;;;;;;;;;GAAA;EAE3C,AAAA,UAWC;UAVO,KAA6B;UAC7B,YAEL;iDADoD,KAAG;qDAGhD;;;;;;;;;;;4KAAiC,YAAU;;;;0HAA3B;;IAExB;;;;;;;;;;2HAAiC,YAAU;;;;;wEAA3B;WAEA,YAAU;GAC3B;EAED,AAAA,iBAMC;UALO,KAA6B;UAC7B,YAEL;iDADoD,KAAG;mCAEjD;;;;;;;;;;;0JAAiC,YAAU;;;;wGAA3B;GACxB;;;;;;;;;;;;;;;;IArCD;qCAAA;;;;;;;;;;;0GAAoC;KAAA;IACpC;qCAAA;;;;;;;;;;;0GAAoC;KAAA;IACpC;qCAAA;;;;;;;;;;;0GAAmC;KAAA;IACnC;;;;;uCAAA;;;;;;;;;;;;;;;;4GAA+C;;;;;;uCAA/C;;;;;;;;;;;;4GAA+C;;;;;;;;;;;;;;uCAA/C;;;;;;;;;;;;;;;4GAA+C;;;;;;;;;KAAA;IAC/C;qCAAA;;;;;;;;;;;0GAAkC;KAAA;;;;;;;;;;;;"
-}
