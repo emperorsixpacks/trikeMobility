@@ -84,12 +84,12 @@ export default function InvestorDashboard() {
         {address && (
           <div className="px-5 pt-3">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 flex items-center gap-2">
-              <Wallet size={14} className="text-green-200 shrink-0" />
-              <code className="text-xs text-green-100 font-mono truncate flex-1">{shortAddress}</code>
+              <Wallet size={14} className="text-white/70 shrink-0" />
+              <code className="text-xs text-white font-mono truncate flex-1 font-semibold">{shortAddress}</code>
               <button
                 type="button"
                 onClick={handleCopy}
-                className="shrink-0 text-[11px] text-green-200 hover:text-white font-medium cursor-pointer"
+                className="shrink-0 text-[11px] text-white/80 hover:text-white font-medium cursor-pointer"
                 aria-label="Copy address"
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
