@@ -1,50 +1,58 @@
 {
-  "network": "preprod",
-  "cardano": {
+  "mainnet": {
+    "wallet_address": "addr1vxasusf9vdrthq6kmu984jc4m8czeeyyy8wevufuckwtzwgaq0ry8",
+    "policy_id": "a8b910f0213831b4ed8b96f04a4e055de864653482e94d6d76601190",
+    "script_address": "addr1wx5tjy8syyurrd8d3wt0qjjwq4w7ser9xjpwjntdwespryqdyggtn",
+    "explorer_base": "https://cardanoscan.io",
+    "contracts": {
+      "user_registry": {
+        "validator_hash": "67a35a64a6b04a17d0eccdf6a4eaa791f3b1d71b60de8016eebd88d8",
+        "script_address": "addr1w9n6xkny56cy597sanxldf8257gl8vwhrdsdaqqka67c3kqhdk4hx",
+        "fund_tx": "425a9e9b13b4919960a80f8d4cd931f8cfec28768a31790d34a250bb625be4a0"
+      },
+      "private_investment": {
+        "validator_hash": "ab85916e28be69451492052d5bae1317209b4150d1eb2ea9188c5e93",
+        "script_address": "addr1wx4ctytw9zlxj3g5jgzj6kawzvtjpx6p2rg7kt4frzx9aycym9uax",
+        "pools": {
+          "TRK-001": { "fund_tx": "8817c12dab7742b6a66d5a01757dcaf969d65b2d446a4e4df9ed91efbc9cb547" },
+          "TRK-002": { "fund_tx": "10c484e73394393cb8675e5fbdeeda8e57cde16f010fc6bb9a8a37f6b2d7ca2c" },
+          "TRK-003": { "fund_tx": "0f13ac266f82993b141abac35f9b9b127b5c8f73b7b5d80cce2e641a6ded7a08" }
+        }
+      },
+      "yield_vault": {
+        "validator_hash": "42af36b419e48ebbc2e48519dbdb6ae2858d58831aef3446add016aa",
+        "script_address": "addr1w9p27d45r8jgaw7zujz3nk7mdt3gtr2csvdw7dzx4hgpd2sxrf24z",
+        "fund_tx": "7a9e337a2596de7805300f0cf0c7a04f8dabcaef1cc795d477a825f8d9570d04"
+      }
+    },
+    "notes": "342ee5cf0db4442a3ff9c632499b90a40ab0453646d2532cbc6a61185f17d782#0 at user_registry has 3 ADA with NO datum — unrecoverable"
+  },
+  "preprod": {
+    "wallet_address": "addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd",
     "policy_id": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea",
     "script_address": "addr_test1wr00dqehse7tfu0etd4cz8ldhlxaw7qdzz54esrjqacg36sp45dt3",
     "explorer_base": "https://preprod.cardanoscan.io",
     "tokens": [
-      {
-        "token_name": "TRK-1",
-        "asset_id": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea54524b2d31",
-        "mint_tx_hash": "c2c73222",
-        "asset_fingerprint": "asset196dn0nhuyzwzz473nw5d5vu685glnfa6h3g3hm"
-      },
-      {
-        "token_name": "TRK-2",
-        "asset_id": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea54524b2d32",
-        "mint_tx_hash": "8745df0d814f393d53574b2543ab27a4eecddfe0d2e589b836a9e97f22cca622"
-      },
-      {
-        "token_name": "TRK-3",
-        "asset_id": "def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea54524b2d33",
-        "mint_tx_hash": "c48bcb53c35dc32fd0055268001208de53d7f29636b21dc92fc9054d12633f88"
-      }
+      { "token_name": "TRK-1", "asset_id": "def68337...54524b2d31", "mint_tx_hash": "c2c73222" },
+      { "token_name": "TRK-2", "asset_id": "def68337...54524b2d32", "mint_tx_hash": "8745df0d814f393d53574b2543ab27a4eecddfe0d2e589b836a9e97f22cca622" },
+      { "token_name": "TRK-3", "asset_id": "def68337...54524b2d33", "mint_tx_hash": "c48bcb53c35dc32fd0055268001208de53d7f29636b21dc92fc9054d12633f88" }
     ],
-    "wallet_address": "addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd"
-  },
-  "contracts": {
-    "user_registry": {
-      "validator_hash": "67a35a64a6b04a17d0eccdf6a4eaa791f3b1d71b60de8016eebd88d8",
-      "script_address": "addr_test1wpn6xkny56cy597sanxldf8257gl8vwhrdsdaqqka67c3kqv9zfcr",
-      "fund_tx": "2ae5b945e4a6f6f9a6e61a10290d5310ea1427a914706c2dd51bb86425312552",
-      "explorer": "https://preprod.cardanoscan.io/transaction/2ae5b945e4a6f6f9a6e61a10290d5310ea1427a914706c2dd51bb86425312552"
-    },
-    "private_investment": {
-      "validator_hash": "ab85916e28be69451492052d5bae1317209b4150d1eb2ea9188c5e93",
-      "script_address": "addr_test1wz4ctytw9zlxj3g5jgzj6kawzvtjpx6p2rg7kt4frzx9aycln3qjr",
-      "fund_tx": "65c2a9ce370086d69605acbd5808078b0d0f1d87ec5f1ddb7838efc5216b58c1",
-      "explorer": "https://preprod.cardanoscan.io/transaction/65c2a9ce370086d69605acbd5808078b0d0f1d87ec5f1ddb7838efc5216b58c1"
-    },
-    "yield_vault": {
-      "validator_hash": "42af36b419e48ebbc2e48519dbdb6ae2858d58831aef3446add016aa",
-      "script_address": "addr_test1wpp27d45r8jgaw7zujz3nk7mdt3gtr2csvdw7dzx4hgpd2satak68",
-      "fund_tx": "11b6502e1db533b24d141720bb2ac499d1530bca13eff4e24f7fb0450d244315",
-      "explorer": "https://preprod.cardanoscan.io/transaction/11b6502e1db533b24d141720bb2ac499d1530bca13eff4e24f7fb0450d244315"
+    "contracts": {
+      "user_registry": {
+        "validator_hash": "67a35a64a6b04a17d0eccdf6a4eaa791f3b1d71b60de8016eebd88d8",
+        "script_address": "addr_test1wpn6xkny56cy597sanxldf8257gl8vwhrdsdaqqka67c3kqv9zfcr",
+        "fund_tx": "2ae5b945e4a6f6f9a6e61a10290d5310ea1427a914706c2dd51bb86425312552"
+      },
+      "private_investment": {
+        "validator_hash": "ab85916e28be69451492052d5bae1317209b4150d1eb2ea9188c5e93",
+        "script_address": "addr_test1wz4ctytw9zlxj3g5jgzj6kawzvtjpx6p2rg7kt4frzx9aycln3qjr",
+        "fund_tx": "65c2a9ce370086d69605acbd5808078b0d0f1d87ec5f1ddb7838efc5216b58c1"
+      },
+      "yield_vault": {
+        "validator_hash": "42af36b419e48ebbc2e48519dbdb6ae2858d58831aef3446add016aa",
+        "script_address": "addr_test1wpp27d45r8jgaw7zujz3nk7mdt3gtr2csvdw7dzx4hgpd2satak68",
+        "fund_tx": "11b6502e1db533b24d141720bb2ac499d1530bca13eff4e24f7fb0450d244315"
+      }
     }
-  },
-  "midnight": {
-    "status": "pending"
   }
 }
