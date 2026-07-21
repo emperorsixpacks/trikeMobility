@@ -23,19 +23,34 @@ from pycardano import (
     Redeemer, RedeemerTag, ExecutionUnits, PlutusV3Script,
     VerificationKeyWitness, TransactionId
 )
-from pycardano.plutus import PlutusData
+from pycardano.plutus import PlutusData, RawPlutusData
 from pycardano.key import PaymentSigningKey
 
-BLOCKFROST = "https://cardano-preprod.blockfrost.io/api/v0"
-BF_KEY = "preprod6xZmwOOWmivEna00Wkm9BWboklq2Fb2e"
-WALLET_ADDR = "addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd"
+NETWORK = os.environ.get("CARDANO_NETWORK", "preprod")
+if NETWORK == "mainnet":
+    BLOCKFROST = "https://cardano-mainnet.blockfrost.io/api/v0"
+    BF_KEY = os.environ.get("BLOCKFROST_PROJECT_ID", "")
+    WALLET_ADDR = os.environ.get("CARDANO_WALLET_ADDRESS", "addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd")
+    CARDANO_NETWORK = Network.MAINNET
+else:
+    BLOCKFROST = "https://cardano-preprod.blockfrost.io/api/v0"
+    BF_KEY = "preprod6xZmwOOWmivEna00Wkm9BWboklq2Fb2e"
+    WALLET_ADDR = "addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd"
+    CARDANO_NETWORK = Network.TESTNET
 DIR = os.path.dirname(os.path.abspath(__file__))
 
-SCRIPT_ADDRS = {
-    "user_registry": "addr_test1wpn6xkny56cy597sanxldf8257gl8vwhrdsdaqqka67c3kqv9zfcr",
-    "private_investment": "addr_test1wz4ctytw9zlxj3g5jgzj6kawzvtjpx6p2rg7kt4frzx9aycln3qjr",
-    "yield_vault": "addr_test1wpp27d45r8jgaw7zujz3nk7mdt3gtr2csvdw7dzx4hgpd2satak68",
-}
+if NETWORK == "mainnet":
+    SCRIPT_ADDRS = {
+        "user_registry": "addr1w9n6xkny56cy597sanxldf8257gl8vwhrdsdaqqka67c3kqhdk4hx",
+        "private_investment": "addr1wx4ctytw9zlxj3g5jgzj6kawzvtjpx6p2rg7kt4frzx9aycym9uax",
+        "yield_vault": "addr1w9p27d45r8jgaw7zujz3nk7mdt3gtr2csvdw7dzx4hgpd2sxrf24z",
+    }
+else:
+    SCRIPT_ADDRS = {
+        "user_registry": "addr_test1wpn6xkny56cy597sanxldf8257gl8vwhrdsdaqqka67c3kqv9zfcr",
+        "private_investment": "addr_test1wz4ctytw9zlxj3g5jgzj6kawzvtjpx6p2rg7kt4frzx9aycln3qjr",
+        "yield_vault": "addr_test1wpp27d45r8jgaw7zujz3nk7mdt3gtr2csvdw7dzx4hgpd2satak68",
+    }
 
 
 def http_get(path):
@@ -52,8 +67,12 @@ def http_post(path, data):
         headers={"project_id": BF_KEY, "Content-Type": "application/cbor"},
         method="POST"
     )
-    with urllib.request.urlopen(req) as r:
-        return r.read().decode()
+    try:
+        with urllib.request.urlopen(req) as r:
+            return r.read().decode()
+    except urllib.error.HTTPError as e:
+        body = e.read().decode() if e.fp else ""
+        return f"ERROR {e.code}: {body[:300]}"
 
 
 def http_post_raw(path, data):
@@ -100,13 +119,6 @@ class PoolDatum(PlutusData):
 
 
 @dataclasses.dataclass
-class RegistryDatum(PlutusData):
-    CONSTR_ID = 0
-    authority_hash: bytes
-    is_verified: bool
-
-
-@dataclasses.dataclass
 class VaultDatum(PlutusData):
     CONSTR_ID = 0
     total_assets: int
@@ -125,7 +137,12 @@ def build_registry_datum(authority_hash: str, is_verified: bool):
         h = bytes.fromhex(authority_hash)
     else:
         h = authority_hash.encode()
-    return RegistryDatum(h, is_verified)
+    # WARNING: pycardano 0.19.2 encodes bool fields as CBOR boolean (f5/f4)
+    # but Cardano expects Plutus Constr (d87a80/d87980).
+    # Using RawPlutusData with correct CBOR encoding to avoid Shelley Tx error.
+    bool_val = cbor2.CBORTag(122, []) if is_verified else cbor2.CBORTag(121, [])
+    datum_cbor = cbor2.dumps(cbor2.CBORTag(121, [h, bool_val]), canonical=False)
+    return RawPlutusData(datum_cbor)
 
 
 def build_vault_datum(total_assets: int, total_shares: int, share_price: int):
@@ -177,7 +194,7 @@ def write_datum(script_name: str, datum: dict, ada_amount: int):
 
     sk = load_skey()
     vk = sk.to_verification_key()
-    wallet_addr = Address(payment_part=vk.hash(), network=Network.TESTNET)
+    wallet_addr = Address(payment_part=vk.hash(), network=CARDANO_NETWORK)
     script_addr = Address.decode(SCRIPT_ADDRS[script_name])
 
     if script_name == "private_investment":
@@ -229,7 +246,7 @@ def write_datum(script_name: str, datum: dict, ada_amount: int):
         return None
     else:
         print(f"  SUCCESS: {result}")
-        print(f"  Explorer: https://preprod.cardanoscan.io/transaction/{result}")
+        print(f"  Explorer: https://cardanoscan.io/transaction/{result}")
         return result
 
 
@@ -272,7 +289,7 @@ def invest(tricycle_id: str, shares_to_buy: int):
 
     sk = load_skey()
     vk = sk.to_verification_key()
-    wallet_addr = Address(payment_part=vk.hash(), network=Network.TESTNET)
+    wallet_addr = Address(payment_part=vk.hash(), network=CARDANO_NETWORK)
     script_addr = Address.decode(SCRIPT_ADDRS["private_investment"])
 
     # 1. Find pool UTxO — prefer correct encoding (constructor 0) over broken (constructor 6)
@@ -457,7 +474,7 @@ def invest(tricycle_id: str, shares_to_buy: int):
     result, err2 = http_post_raw("/tx/submit", fixed_tx)
     if result is not None:
         print(f"  SUCCESS: {result}")
-        print(f"  Explorer: https://preprod.cardanoscan.io/transaction/{result}")
+        print(f"  Explorer: https://cardanoscan.io/transaction/{result}")
         return result
     else:
         # Extract new expected hash if mismatch
@@ -487,7 +504,7 @@ def claim_yield(shares_to_burn: int):
 
     sk = load_skey()
     vk = sk.to_verification_key()
-    wallet_addr = Address(payment_part=vk.hash(), network=Network.TESTNET)
+    wallet_addr = Address(payment_part=vk.hash(), network=CARDANO_NETWORK)
     vault_addr = Address.decode(SCRIPT_ADDRS["yield_vault"])
 
     # 1. Find the yield vault UTxO with correct datum (constructor 0)
@@ -653,7 +670,7 @@ def claim_yield(shares_to_burn: int):
     result, err2 = http_post_raw("/tx/submit", fixed_tx)
     if result is not None:
         print(f"  SUCCESS: {result}")
-        print(f"  Explorer: https://preprod.cardanoscan.io/transaction/{result}")
+        print(f"  Explorer: https://cardanoscan.io/transaction/{result}")
         return result
     else:
         print(f"  FAILED: {(err2 or '')[:800]}")
