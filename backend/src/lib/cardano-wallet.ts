@@ -1,14 +1,13 @@
 // Cardano HD wallet — server-managed.
 // ONE master seed in .env, per-user integer index in DB.
-// Derivation: HMAC-SHA256(master_seed, index) → 32-byte child key → Python → Shelley address.
+// Derivation: HMAC-SHA256(master_seed, index) → 32-byte child key → Shelley address.
 
 import { createHmac } from "crypto";
-import { execSync } from "child_process";
 import { config } from "../config.js";
+import { deriveAddress as keygenAddress } from "./cardano-keygen.js";
 
 const BF_BASE = config.cardanoBlockfrostUrl;
 const BF_KEY = config.cardanoBlockfrostKey;
-const KEYGEN = `${process.cwd()}/../contracts-cardano/cardano_keygen.py`;
 
 // ---------------------------------------------------------------------------
 // HD derivation
@@ -28,20 +27,13 @@ function deriveChildKey(index: number): Buffer {
   return createHmac("sha256", masterSeed).update(indexBuf).digest() as Buffer;
 }
 
-// Cache: index → address (avoids repeated Python calls)
 const addressCache = new Map<number, string>();
 
 /** Derive Cardano Shelley address for user at given index (mainnet or testnet based on env). */
 export function deriveAddress(index: number): string {
   if (addressCache.has(index)) return addressCache.get(index)!;
   const childKey = deriveChildKey(index);
-  const env = { ...process.env, CARDANO_NETWORK: config.cardanoNetwork };
-  const result = execSync(`python3 ${KEYGEN} --address ${childKey.toString("hex")}`, {
-    encoding: "utf-8",
-    timeout: 5000,
-    env,
-  });
-  const { address } = JSON.parse(result);
+  const address = keygenAddress(childKey.toString("hex"));
   addressCache.set(index, address);
   return address;
 }
