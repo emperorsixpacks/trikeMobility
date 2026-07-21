@@ -89,12 +89,6 @@ export default function DepositModal({ isOpen, onClose, onDeposited }: DepositMo
 
     if (!isVisible && !isOpen) return null;
 
-    const handleReceived = (amount: number) => {
-        setReceived(amount);
-        onDeposited?.();
-        setView("success");
-    };
-
     const MIN_NGN = 700;
     const ngnNum = Number(ngn);
     const belowMin = ngnNum > 0 && ngnNum < MIN_NGN;
@@ -171,7 +165,7 @@ export default function DepositModal({ isOpen, onClose, onDeposited }: DepositMo
     const renderCrypto = () => (
         <div className="flex flex-col items-center w-full animate-in slide-in-from-right-10 duration-300">
             <Header title="Deposit Crypto" onBack={() => setView("menu")} />
-            <ReceiveCrypto address={address} onReceived={handleReceived} />
+            <ReceiveCrypto address={address} />
         </div>
     );
 
