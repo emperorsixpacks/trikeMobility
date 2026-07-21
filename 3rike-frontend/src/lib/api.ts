@@ -182,12 +182,12 @@ export function login(payload: {
 
 export type MidnightBalance = {
   address: string;
-  /** Total amount invested (from DB — on-chain amounts are private). */
+  lovelace: number;
+  ada: string;
   totalInvestedUsdc: string;
-  /** Number of investments made. */
   investmentCount: number;
-  /** Whether Midnight privacy is enabled. */
-  privacyEnabled: boolean;
+  network: string;
+  explorer: string;
 };
 
 export function getMidnightBalance(): Promise<MidnightBalance> {

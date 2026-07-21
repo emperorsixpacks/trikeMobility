@@ -96,7 +96,7 @@ export default function InvestmentApp() {
             {(success.txHash || success.commitment) && (
               <Button
                 variant="outline"
-                onClick={() => window.open(`https://preprod.cardanoscan.io/transaction/${success.txHash || success.commitment}`, "_blank")}
+                onClick={() => window.open(`https://cardanoscan.io/transaction/${success.txHash || success.commitment}`, "_blank")}
                 className="w-full h-12 border-[#01C259] text-[#01C259] hover:bg-[#E9F8EE] rounded-2xl cursor-pointer"
               >
                 View on CardanoScan

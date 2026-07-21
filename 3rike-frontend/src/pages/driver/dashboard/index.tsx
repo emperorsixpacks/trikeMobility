@@ -160,15 +160,8 @@ export default function DriverDashboard() {
                     Wallet Balance
                   </span>
                   <span className="text-green-100/80 text-[10px] font-light flex items-center gap-1">
-                    Cardano Preprod
-                    <a
-                      href="https://preprod.cardanoscan.io/address/addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <ExternalLink size={10} />
-                    </a>
+                    {walletBalance?.network ?? "Cardano"}
+                    <ExternalLink size={10} />
                   </span>
                 </div>
 

@@ -97,7 +97,7 @@ export default function Wallet() {
                 <span className="text-sm font-light text-white/80 align-middle">USDC</span>
               </h1>
             )}
-            <p className="text-xs text-white/70 mt-2">Cardano Preprod · testnet wallet</p>
+            <p className="text-xs text-white/70 mt-2">Cardano {balance?.network?.replace("cardano-", "") ?? ""} · wallet</p>
           </div>
         </div>
 
@@ -133,7 +133,7 @@ export default function Wallet() {
         {/* Wallet address */}
         <div className="bg-[#F8FAFC] rounded-2xl p-4 mb-4">
           <p className="text-[10px] text-[#909090] uppercase tracking-wider mb-2">
-            Your Cardano Address (Preprod)
+            Your Cardano Address
           </p>
           <div className="flex items-center gap-2">
             <code className="flex-1 text-[12px] text-gray-700 font-mono truncate">{short}</code>
@@ -152,7 +152,7 @@ export default function Wallet() {
           </div>
           {address && (
             <a
-              href={`https://preprod.cardanoscan.io/address/${address}`}
+              href={`${balance?.explorer ?? "https://cardanoscan.io"}/address/${address}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[11px] text-[#01C259] hover:underline mt-2 inline-block"
@@ -161,7 +161,7 @@ export default function Wallet() {
             </a>
           )}
           <p className="text-[10px] text-[#909090] mt-2">
-            Cardano Preprod testnet · balances visible on-chain
+            Cardano {balance?.network?.replace("cardano-", "") ?? ""} · balances visible on-chain
           </p>
         </div>
 
