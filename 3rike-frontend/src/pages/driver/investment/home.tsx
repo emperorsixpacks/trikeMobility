@@ -290,6 +290,28 @@ export default function InvestmentApp() {
             </div>
           )}
 
+          {/* Send / Receive */}
+          {selected && (
+            <div className="flex items-center justify-center gap-4 mb-3">
+              <button
+                type="button"
+                onClick={() => navigate(`${base}/wallet`)}
+                className="text-xs font-medium text-[#01C259] hover:underline cursor-pointer flex items-center gap-1"
+              >
+                <img src="/rounded-back.svg" alt="" className="w-4 h-4 rotate-180" />
+                Send
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(`${base}/wallet`)}
+                className="text-xs font-medium text-[#01C259] hover:underline cursor-pointer flex items-center gap-1"
+              >
+                <img src="/rounded-back.svg" alt="" className="w-4 h-4" />
+                Receive
+              </button>
+            </div>
+          )}
+
           {selected && qty > 0 && (
             <p className="text-center text-xs text-[#909090] mb-3">
               Projected earnings{" "}

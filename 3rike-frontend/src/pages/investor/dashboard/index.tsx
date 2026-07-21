@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { TrendingUp, Wallet } from "lucide-react";
+import { Check, Copy, TrendingUp, Wallet } from "lucide-react";
 import BottomNav from "@/components/ui/bottom-nav";
 import Avatar from "@/components/ui/avatar";
 import Skeleton from "@/components/ui/skeleton";
@@ -13,6 +13,19 @@ export default function InvestorDashboard() {
   const { user } = useAuth();
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const address = user?.walletAddress ?? "";
+  const shortAddress = address ? `${address.slice(0, 8)}…${address.slice(-6)}` : "";
+
+  const handleCopy = useCallback(async () => {
+    if (!address) return;
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* ignore */ }
+  }, [address]);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,6 +78,24 @@ export default function InvestorDashboard() {
           </div>
         </div>
 
+        {/* Wallet address bar */}
+        {address && (
+          <div className="px-5 pt-3">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2.5 flex items-center gap-2">
+              <Wallet size={14} className="text-green-200 shrink-0" />
+              <code className="text-xs text-green-100 font-mono truncate flex-1">{shortAddress}</code>
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="shrink-0 text-[11px] text-green-200 hover:text-white font-medium cursor-pointer"
+                aria-label="Copy address"
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Quick actions */}
         <div className="px-5 py-4 flex gap-3">
           <Button
@@ -72,7 +103,7 @@ export default function InvestorDashboard() {
             className="flex-1 bg-[#01C259] hover:bg-[#01a84a] text-white rounded-2xl h-12 gap-2 text-sm font-medium"
           >
             <TrendingUp size={16} />
-            Browse Marketplace
+            Marketplace
           </Button>
           <Button
             onClick={() => navigate("/investor/investment/portfolio")}
@@ -80,7 +111,15 @@ export default function InvestorDashboard() {
             className="flex-1 border-[#01C259] text-[#01C259] hover:bg-[#E9F8EE] rounded-2xl h-12 gap-2 text-sm font-medium"
           >
             <Wallet size={16} />
-            My Portfolio
+            Portfolio
+          </Button>
+          <Button
+            onClick={() => navigate("/investor/wallet")}
+            variant="outline"
+            className="flex-1 border-[#01C259] text-[#01C259] hover:bg-[#E9F8EE] rounded-2xl h-12 gap-2 text-sm font-medium"
+          >
+            <Wallet size={16} />
+            Wallet
           </Button>
         </div>
 
