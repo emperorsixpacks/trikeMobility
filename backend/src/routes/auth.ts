@@ -64,12 +64,12 @@ router.post("/register", async (req, res) => {
 
   // Check email uniqueness
   const emailTaken = await prisma.user.findUnique({ where: { email } });
-  if (emailTaken) return res.status(409).json({ error: "A user with this email already exists" });
+  if (emailTaken) return res.status(409).json({ error: "email_taken" });
 
   // Check phone uniqueness (if provided)
   if (phone) {
     const phoneTaken = await prisma.user.findFirst({ where: { phone } });
-    if (phoneTaken) return res.status(409).json({ error: "A user with this phone number already exists" });
+    if (phoneTaken) return res.status(409).json({ error: "phone_taken" });
   }
 
   const wallet = await provisionWallet();

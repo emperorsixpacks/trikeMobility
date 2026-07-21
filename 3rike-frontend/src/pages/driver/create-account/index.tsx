@@ -464,15 +464,11 @@ export default function CreateAccountForm() {
 
 function messageFor(err: unknown): string {
     if (err instanceof ApiError) {
-        switch (err.code) {
-            case "timeout":
-                return "The server is waking up — please try again in a moment.";
-            case "network_error":
-                return "Couldn't reach the server. Check your connection.";
-            default:
-                if (err.status === 422) return "An account with this email already exists.";
-                return "Something went wrong creating your account. Please try again.";
-        }
+        if (err.code === "timeout") return "The server is waking up — please try again in a moment.";
+        if (err.code === "network_error") return "Couldn't reach the server. Check your connection.";
+        if (err.code === "email_taken") return "A user with this email already exists.";
+        if (err.code === "phone_taken") return "A user with this phone number already exists.";
+        return "Something went wrong creating your account. Please try again.";
     }
     return "Something went wrong creating your account. Please try again.";
 }
