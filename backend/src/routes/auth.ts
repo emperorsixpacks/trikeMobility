@@ -10,13 +10,17 @@ import { writeKycDatum } from "../lib/midnight-investment.js";
 
 const router = Router();
 
-const credentials = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  role: z.enum(["driver", "investor"]).optional(),
+const registerSchema = z.object({
+  email: z.string().email("Enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  role: z.enum(["driver", "investor"]).default("driver"),
   fullName: z.string().optional(),
   phone: z.string().optional(),
-  pin: z.string().regex(/^\d{4}$/).optional(),
+});
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
 });
 
 type UserRecord = {
@@ -49,31 +53,40 @@ function tokenFor(userId: number): string {
   return jwt.sign({ uid: userId }, config.jwtSecret, { expiresIn: "7d" });
 }
 
-// Register: creates the user AND auto-provisions an embedded Midnight wallet.
+// Register: creates the user AND auto-provisions an embedded wallet.
 router.post("/register", async (req, res) => {
-  const parsed = credentials.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "invalid_input" });
-  const { email, password, role, fullName, phone, pin } = parsed.data;
+  const parsed = registerSchema.safeParse(req.body);
+  if (!parsed.success) {
+    const first = parsed.error.errors[0];
+    return res.status(400).json({ error: first.message });
+  }
+  const { email, password, role, fullName, phone } = parsed.data;
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return res.status(409).json({ error: "email_taken" });
+  // Check email uniqueness
+  const emailTaken = await prisma.user.findUnique({ where: { email } });
+  if (emailTaken) return res.status(409).json({ error: "A user with this email already exists" });
+
+  // Check phone uniqueness (if provided)
+  if (phone) {
+    const phoneTaken = await prisma.user.findFirst({ where: { phone } });
+    if (phoneTaken) return res.status(409).json({ error: "A user with this phone number already exists" });
+  }
 
   const wallet = await provisionWallet();
   const user = await prisma.user.create({
     data: {
       email,
       passwordHash: await bcrypt.hash(password, 10),
-      role: role ?? "driver",
+      role,
       fullName: fullName ?? null,
       phone: phone ?? null,
-      pinHash: pin ? await bcrypt.hash(pin, 10) : null,
       walletIndex: wallet.walletIndex,
       walletAddress: wallet.walletAddress,
     },
   });
 
   // Write KYC datum to user_registry contract (fire-and-forget)
-  const kycHash = wallet.walletAddress.slice(0, 56); // use address as authority hash
+  const kycHash = wallet.walletAddress.slice(0, 56);
   writeKycDatum(kycHash, true).catch((err) =>
     console.warn("KYC datum write failed (non-blocking):", err.message),
   );
@@ -82,13 +95,14 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const parsed = credentials.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "invalid_input" });
+  const parsed = loginSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "Enter your email and password" });
   const { email, password } = parsed.data;
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-    return res.status(401).json({ error: "invalid_credentials" });
+  if (!user) return res.status(401).json({ error: "No account found with this email" });
+  if (!(await bcrypt.compare(password, user.passwordHash))) {
+    return res.status(401).json({ error: "Wrong password. Try again" });
   }
 
   res.json({ token: tokenFor(user.id), user: publicUser(user) });
