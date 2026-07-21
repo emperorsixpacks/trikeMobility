@@ -69,6 +69,9 @@ export default function LoginForm() {
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                         <div className="pt-10 pb-2 text-center">
+                            <button type="button" onClick={() => navigate("/")} className="mx-auto mb-4 cursor-pointer">
+                                <img src="/new_3rike_logo.png" alt="3rike" className="h-10 mx-auto" />
+                            </button>
                             <h1 className="font-extrabold text-2xl">Welcome back</h1>
                             <p className="text-sm text-gray-500 mt-1">
                                 Sign in to continue

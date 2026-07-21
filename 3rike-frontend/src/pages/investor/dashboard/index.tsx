@@ -53,7 +53,9 @@ export default function InvestorDashboard() {
               <p className="text-green-100 text-sm font-light">Welcome back</p>
               <h1 className="text-xl font-bold mt-1">{user?.fullName || user?.email}</h1>
             </div>
-            <Avatar />
+            <button type="button" onClick={() => navigate("/investor/settings")} className="cursor-pointer">
+              <Avatar />
+            </button>
           </div>
 
           {/* Portfolio value */}

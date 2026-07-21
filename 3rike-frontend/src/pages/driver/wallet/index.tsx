@@ -85,8 +85,8 @@ export default function Wallet() {
               <Skeleton className="h-10 w-48 bg-white/20" />
             ) : (
               <h1 className="text-4xl font-bold mb-1">
-                $ {formatUSDC(balance?.totalInvestedUsdc)}{" "}
-                <span className="text-sm font-light text-white/80 align-middle">USDC</span>
+                $ {formatUSD(balance?.adaBalanceUsd)}{" "}
+                <span className="text-sm font-light text-white/80 align-middle">USD</span>
               </h1>
             )}
             <p className="text-xs text-white/70 mt-2">Cardano {balance?.network?.replace("cardano-", "") ?? ""} · wallet</p>
@@ -103,7 +103,7 @@ export default function Wallet() {
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-white border border-gray-100 rounded-2xl p-4">
             <p className="text-[10px] text-[#909090] uppercase tracking-wider mb-1">Invested</p>
-            <p className="text-base font-bold text-gray-900">${formatUSDC(balance?.totalInvestedUsdc)}</p>
+            <p className="text-base font-bold text-gray-900">${formatUSD(balance?.totalInvestedUsdc)}</p>
             <p className="text-[10px] text-[#909090] mt-0.5">Total deployed</p>
           </div>
           <div className="bg-white border border-gray-100 rounded-2xl p-4">
@@ -184,7 +184,7 @@ export default function Wallet() {
   );
 }
 
-function formatUSDC(raw?: string): string {
+function formatUSD(raw?: string): string {
   if (raw === undefined) return "0";
   const n = Number(raw);
   if (!Number.isFinite(n)) return "0";

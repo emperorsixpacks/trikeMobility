@@ -8,12 +8,31 @@ import { getWalletBalance } from "../lib/cardano-wallet.js";
 
 const router = Router();
 
+async function fetchAdaPrice(): Promise<number> {
+  try {
+    const res = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=usd",
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return 0;
+    const data = await res.json() as Record<string, Record<string, number>>;
+    return data?.cardano?.usd ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 // GET /wallet/balance — real Cardano balance via Blockfrost
 router.get("/balance", requireAuth, async (req: AuthedRequest, res) => {
   const user = await prisma.user.findUnique({ where: { id: req.userId! } });
   if (!user) return res.status(404).json({ error: "not_found" });
 
-  const balance = await getWalletBalance(user.walletAddress);
+  const [balance, adaPriceUsd] = await Promise.all([
+    getWalletBalance(user.walletAddress),
+    fetchAdaPrice(),
+  ]);
+
+  const adaBalance = balance.lovelace / 1_000_000;
 
   // Count investments from DB
   const investments = await prisma.investment.findMany({
@@ -28,7 +47,9 @@ router.get("/balance", requireAuth, async (req: AuthedRequest, res) => {
   res.json({
     address: user.walletAddress,
     lovelace: balance.lovelace,
-    ada: (balance.lovelace / 1_000_000).toFixed(2),
+    ada: adaBalance.toFixed(2),
+    adaPriceUsd,
+    adaBalanceUsd: (adaBalance * adaPriceUsd).toFixed(2),
     assets: balance.assets,
     totalInvestedUsdc: String(totalInvested),
     investmentCount: investments.length,

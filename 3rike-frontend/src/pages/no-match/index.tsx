@@ -1,8 +1,19 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileFrame from "@/components/ui/mobile-frame";
+import { useAuth } from "@/lib/auth";
 
 export default function NoMatch() {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(user?.role === "investor" ? "/investor" : "/driver", { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   return (
     <MobileFrame innerBg="bg-[#F3F4F6]" innerClassName="flex flex-col items-center justify-center p-4 text-center">
@@ -12,12 +23,6 @@ export default function NoMatch() {
         <p className="text-black mb-6">
           Oops! The page you're looking for doesn't exist or has been moved.
         </p>
-        <button
-          onClick={() => navigate('/')}
-          className="px-6 py-3 bg-black text-yellow-400 rounded-md hover:bg-[#b5b5b5] transition duration-300"
-        >
-          Go Back Home
-        </button>
       </div>
     </MobileFrame>
   );

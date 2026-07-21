@@ -184,6 +184,8 @@ export type MidnightBalance = {
   address: string;
   lovelace: number;
   ada: string;
+  adaPriceUsd: number;
+  adaBalanceUsd: string;
   totalInvestedUsdc: string;
   investmentCount: number;
   network: string;
