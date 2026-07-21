@@ -31,7 +31,7 @@ export default function ReceiveCrypto({ address }: { address: string }) {
       </div>
 
       <div className="w-full bg-gray-50 rounded-2xl p-3 mb-3 flex items-center gap-2">
-        <code className="flex-1 text-[11px] text-gray-600 font-mono break-all leading-relaxed select-all">
+        <code className="flex-1 text-[11px] text-gray-900 font-mono break-all leading-relaxed select-all">
           {address || "—"}
         </code>
         <button
