@@ -1,12 +1,11 @@
-// Prisma schema for 3rike backend — Midnight privacy-first version.
-// Local dev uses SQLite; switch `provider` to "postgresql" for production.
+// Prisma schema for 3rike backend.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
