@@ -6,9 +6,30 @@ Privacy-first tricycle financing platform. Drivers get electric tricycles via we
 
 | Layer | Network | Language | Purpose |
 |---|---|---|---|
-| **Privacy** | [Midnight](https://midnight.network) (Preprod) | Compact (ZK) | KYC, shielded investments, private yield vaults — ZK proofs protect user data |
-| **Public Assets** | [Cardano](https://cardano.org) (Preprod) | Aiken (PlutusV3) | TricycleNFT (CIP-25 native tokens) — transparent ownership registry |
-| **Fiat Bridge** | Paycrest API | REST | Testnet USDC ↔ real NGN off-ramp |
+| **Public Assets** | [Cardano](https://cardano.org) (Mainnet) | Aiken (PlutusV3) | TricycleNFT (CIP-25 tokens), investment pools, yield vault, KYC registry |
+| **Privacy** | [Midnight](https://midnight.network) | Compact (ZK) | KYC, shielded investments, private yield vaults (deprecated — pivoted to Cardano) |
+| **Fiat Bridge** | Paycrest API | REST | Testnet USDC ↔ real NGN off-ramp (unused) |
+
+## Deployed Contracts
+
+### Cardano Mainnet
+
+| Contract | Address | TX |
+|---|---|---|
+| **User Registry** | `addr1w9n6xkny56cy597sanxldf8257gl8vwhrdsdaqqka67c3kqhdk4hx` | `425a9e9b...` |
+| **Private Investment** | `addr1wx4ctytw9zlxj3g5jgzj6kawzvtjpx6p2rg7kt4frzx9aycym9uax` | TRK-001: `8817c12d...`, TRK-002: `10c484e7...`, TRK-003: `0f13ac26...` |
+| **Yield Vault** | `addr1w9p27d45r8jgaw7zujz3nk7mdt3gtr2csvdw7dzx4hgpd2sxrf24z` | `7a9e337a...` |
+| **Mint Policy** | `a8b910f0...` | — |
+| **Mint Script** | `addr1wx5tjy8syyurrd8d3wt0qjjwq4w7ser9xjpwjntdwespryqdyggtn` | — |
+| **Wallet** | `addr1vxasusf9vdrthq6kmu984jc4m8czeeyyy8wevufuckwtzwgaq0ry8` | — |
+
+### Cardano Preprod (previous testnet)
+
+| Token | Asset ID | Mint Tx |
+|---|---|---|
+| **TRK-1** | `def68337...54524b2d31` | `c2c73222` |
+| **TRK-2** | `def68337...54524b2d32` | `8745df0d...622` |
+| **TRK-3** | `def68337...54524b2d33` | `c48bcb53...88` |
 
 ## Deployed Contracts (Preprod Testnet)
 
@@ -45,18 +66,21 @@ npx prisma migrate dev --name init
 npm run dev
 ```
 
-Required `.env`:
+Network config via `.env.mainnet` (mainnet) or `.env.testnet` (preprod):
+```bash
+cp .env.mainnet .env   # For mainnet
+cp .env.testnet .env   # For preprod testnet
 ```
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="your-jwt-secret"
-ENCRYPTION_KEY="64-char-hex-key-for-aes-256-gcm"
-BLOCKFROST_PROJECT_ID="preprod..."
-CARDANO_CONTRACT_ADDRESS="addr_test1wr00dqehse7tfu0etd4cz8ldhlxaw7qdzz54esrjqacg36sp45dt3"
-CARDANO_POLICY_ID="def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea"
-MIDNIGHT_ADMIN_SEED="hex-seed-for-admin-wallet"
-MIDNIGHT_USER_REGISTRY="<address-after-deploy>"
-MIDNIGHT_INVESTMENT="<address-after-deploy>"
-MIDNIGHT_VAULT="<address-after-deploy>"
+
+Required `.env` vars:
+```
+CARDANO_NETWORK=mainnet              # or preprod
+BLOCKFROST_PROJECT_ID="mainnet..."   # mainnet or preprod key
+CARDANO_CONTRACT_ADDRESS="addr1wx5tjy8syyurrd8d3wt0qjjwq4w7ser9xjpwjntdwespryqdyggtn"
+CARDANO_POLICY_ID="a8b910f0213831b4ed8b96f04a4e055de864653482e94d6d76601190"
+CARDANO_USER_REGISTRY="addr1w9n6xkny56cy597sanxldf8257gl8vwhrdsdaqqka67c3kqhdk4hx"
+CARDANO_PRIVATE_INVESTMENT="addr1wx4ctytw9zlxj3g5jgzj6kawzvtjpx6p2rg7kt4frzx9aycym9uax"
+CARDANO_YIELD_VAULT="addr1w9p27d45r8jgaw7zujz3nk7mdt3gtr2csvdw7dzx4hgpd2sxrf24z"
 ```
 
 ### Frontend
@@ -74,22 +98,12 @@ npm run dev
 ```bash
 cd contracts-cardano
 ~/.local/bin/aiken build        # Compile validators, generate plutus.json
-python3 deploy.py               # Deploy to Preprod via Blockfrost
+CARDANO_NETWORK=mainnet python3 deploy_mainnet.py  # Deploy to Mainnet
 ```
 
-### Midnight — Compact
+### Midnight — Compact (deprecated)
 
-```bash
-cd contracts-midnight
-npm run compile                 # compact build → managed/*.compact/contract/
-npx tsx src/deploy.ts           # Deploy to Preprod (requires proof server on :6300)
-npx tsx src/deploy.ts --fund   # Show funding addresses without deploying
-```
-
-Requires:
-- Midnight proof server running on `localhost:6300`
-- Wallet funded with tNIGHT (faucet: https://midnight-tmnight-preprod.nethermind.dev/)
-- tDUST generated from tNIGHT delegation via Midnight Lace Wallet
+Pivoted to Cardano-only. Midnight contracts are archived.
 
 ## API Endpoints
 

@@ -1,18 +1,30 @@
 #!/usr/bin/env python3
-"""Mint TRK-4 token live on Cardano Preprod.
-Usage: python3 live-mint.py
+"""Mint TRK-n tokens live on Cardano Mainnet or Preprod.
+Usage: CARDANO_NETWORK=mainnet python3 live-mint.py <trike_id>
 """
-import json, sys, os, hashlib, time
+import json, sys, os, hashlib, time, re
 import cbor2
 from pycardano import *
 from pycardano.plutus import PlutusV3Script, RawPlutusData, RedeemerTag
 from pycardano.key import PaymentSigningKey
 
-BLOCKFROST = "https://cardano-preprod.blockfrost.io/api/v0"
-BF_KEY = "preprod6xZmwOOWmivEna00Wkm9BWboklq2Fb2e"
-WALLET_ADDR = "addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd"
+NETWORK = os.environ.get("CARDANO_NETWORK", "preprod")
 DIR = os.path.dirname(os.path.abspath(__file__))
-EXPLORER = "https://preprod.cardanoscan.io"
+
+if NETWORK == "mainnet":
+    BLOCKFROST = "https://cardano-mainnet.blockfrost.io/api/v0"
+    BF_KEY = os.environ.get("BLOCKFROST_PROJECT_ID", "mainneteTOdIPAOCIlJr5uFAYN1Svs0k42NT4Ti")
+    WALLET_ADDR = "addr1vxasusf9vdrthq6kmu984jc4m8czeeyyy8wevufuckwtzwgaq0ry8"
+    CARDANO_NETWORK = Network.MAINNET
+    MINT_TITLE = "tricycle_nft.tricycle_nft.mint"
+    EXPLORER = "https://cardanoscan.io"
+else:
+    BLOCKFROST = "https://cardano-preprod.blockfrost.io/api/v0"
+    BF_KEY = os.environ.get("BLOCKFROST_PROJECT_ID", "preprod6xZmwOOWmivEna00Wkm9BWboklq2Fb2e")
+    WALLET_ADDR = "addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd"
+    CARDANO_NETWORK = Network.TESTNET
+    MINT_TITLE = "test_mint.test_mint.mint"
+    EXPLORER = "https://preprod.cardanoscan.io"
 
 def http_get(path):
     import urllib.request
@@ -34,22 +46,21 @@ def http_post(path, data):
         return f"ERROR: {e.read().decode()[:500]}"
 
 def get_correct_hash(trike_id):
-    import re
     with open(f"{DIR}/plutus.json") as f:
         pdata = json.load(f)
     for v in pdata["validators"]:
-        if v["title"].endswith(".mint"):
+        if v["title"] == MINT_TITLE:
             ps = PlutusV3Script(bytes.fromhex(v["compiledCode"])); break
     pid = script_hash(ps)
     with open(f"{DIR}/wallet/payment.skey") as f:
         sk = PaymentSigningKey(cbor2.loads(bytes.fromhex(json.load(f)["cborHex"])))
     vk = sk.to_verification_key()
-    wa = Address(payment_part=vk.hash(), network=Network.TESTNET)
-    sa = Address(payment_part=pid, network=Network.TESTNET)
+    wa = Address(payment_part=vk.hash(), network=CARDANO_NETWORK)
+    sa = Address(payment_part=pid, network=CARDANO_NETWORK)
     utxos = http_get(f"/addresses/{WALLET_ADDR}/utxos")
     u = max(utxos, key=lambda x: int(x["amount"][0]["quantity"]))
     lovelace = int(u["amount"][0]["quantity"])
-    tn = AssetName(b"TRK-X")
+    tn = AssetName(f"TRK-{trike_id}".encode())
     asset = Asset(); asset[tn] = 1
     nft = MultiAsset(); nft[pid] = asset
     tx_in = TransactionInput(transaction_id=TransactionId(bytes.fromhex(u["tx_hash"])), index=u["output_index"])
@@ -64,7 +75,7 @@ def get_correct_hash(trike_id):
     bh = hashlib.new("blake2b", body.to_cbor(), digest_size=32).digest()
     witness = TransactionWitnessSet(vkey_witnesses=[VerificationKeyWitness(vk, sk.sign(bh))], plutus_v3_script=[ps], redeemer=[redeemer])
     result = http_post("/tx/submit", Transaction(body, witness).to_cbor())
-    m = re.search(r'expected: SJust \(SafeHash \\\\\"([a-f0-9]{64})', result)
+    m = re.search(r'expected: SJust \(SafeHash \\\\"([a-f0-9]{64})', result)
     if m:
         return bytes.fromhex(m.group(1))
     for candidate in re.findall(r'[a-f0-9]{64}', result):
@@ -73,51 +84,48 @@ def get_correct_hash(trike_id):
     raise Exception(f"Could not extract hash from: {result[:500]}")
 
 def main():
-    trike_id = 4
+    trike_id = int(sys.argv[1]) if len(sys.argv) > 1 else 1
     token_name = f"TRK-{trike_id}"
 
     print(f"\n{'='*60}")
-    print(f"  LIVE MINT: {token_name}")
+    print(f"  LIVE MINT: {token_name} on {'Mainnet' if NETWORK == 'mainnet' else 'Preprod'}")
     print(f"{'='*60}")
-    print(f"  Network:  Cardano Preprod")
+    print(f"  Network:  {'Cardano Mainnet' if NETWORK == 'mainnet' else 'Cardano Preprod'}")
     print(f"  Wallet:   {WALLET_ADDR}")
     print(f"  Explorer: {EXPLORER}")
     print()
 
-    # Step 1: Show current wallet balance
     print(f"  [1/5] Checking wallet balance...")
     addr_info = http_get(f"/addresses/{WALLET_ADDR}")
     lovelace = int(addr_info["amount"][0]["quantity"])
     print(f"  Balance: {lovelace / 1_000_000:.2f} ADA")
-    print(f"  View:    {EXPLORER}/address/{WALLET_ADDR}")
-    print()
 
-    # Step 2: Get UTxOs
+    if lovelace < 3_000_000:
+        print(f"  ERROR: Need at least 3 ADA for minting. Please top up.")
+        sys.exit(1)
+
     print(f"  [2/5] Fetching UTxOs...")
     utxos = http_get(f"/addresses/{WALLET_ADDR}/utxos")
     print(f"  Found {len(utxos)} UTxO(s)")
     print()
 
-    # Step 3: Compute script data hash
-    print(f"  [3/5] Computing script data hash for trike #{trike_id}...")
-    hash_key = f"trike_{trike_id}"
+    print(f"  [3/5] Loading mint policy...")
     with open(f"{DIR}/plutus.json") as f:
         pdata = json.load(f)
     for v in pdata["validators"]:
-        if v["title"].endswith(".mint"):
+        if v["title"] == MINT_TITLE:
             ps = PlutusV3Script(bytes.fromhex(v["compiledCode"])); break
     policy_id = script_hash(ps)
     print(f"  Policy:  {policy_id.payload.hex()}")
     print(f"  Token:   {policy_id.payload.hex()}.{token_name.encode().hex()}")
     print()
 
-    # Step 4: Build and sign
     print(f"  [4/5] Building transaction...")
     with open(f"{DIR}/wallet/payment.skey") as f:
         sk = PaymentSigningKey(cbor2.loads(bytes.fromhex(json.load(f)["cborHex"])))
     vk = sk.to_verification_key()
-    wallet_addr = Address(payment_part=vk.hash(), network=Network.TESTNET)
-    script_addr = Address(payment_part=policy_id, network=Network.TESTNET)
+    wallet_addr = Address(payment_part=vk.hash(), network=CARDANO_NETWORK)
+    script_addr = Address(payment_part=policy_id, network=CARDANO_NETWORK)
 
     u = max(utxos, key=lambda x: int(x["amount"][0]["quantity"]))
     lovelace = int(u["amount"][0]["quantity"])
@@ -133,20 +141,13 @@ def main():
     fee = 850000
     min_out = 2_000_000
     change = lovelace - fee - min_out
+    if change < 1_000_000:
+        print(f"  WARNING: Low change ({change/1e6:.2f} ADA), adjusting fee")
+        fee = lovelace - min_out - 1_000_000
+        change = 1_000_000
 
-    # Check if we need to compute the hash
-    script_data_hash = None
-    if trike_id in [2, 3]:
-        known_hashes = {
-            2: bytes.fromhex("32be7bfdf7091558f98e20ace7ed4a29f4d22d22447cbb7d9c12eddbc75229c3"),
-            3: bytes.fromhex("3670805ed787acc2c239b57911680cdbc4c0a1641d1d504de2e02caf9154c719"),
-        }
-        script_data_hash = known_hashes.get(trike_id)
-    
-    if script_data_hash is None:
-        print(f"  Computing script data hash from node error...")
-        script_data_hash = get_correct_hash(trike_id)
-        print(f"  Hash: {script_data_hash.hex()}")
+    script_data_hash = get_correct_hash(trike_id)
+    print(f"  Hash: {script_data_hash.hex()}")
 
     body = TransactionBody(
         inputs=[tx_in],
@@ -164,8 +165,7 @@ def main():
     print(f"  Fee: {fee} lovelace | Size: {len(tx_bytes)} bytes")
     print()
 
-    # Step 5: Submit
-    print(f"  [5/5] Submitting to Cardano Preprod...")
+    print(f"  [5/5] Submitting...")
     result = http_post("/tx/submit", tx_bytes)
 
     if result.startswith("ERROR"):
@@ -182,17 +182,13 @@ def main():
     print(f"  Explorer:    {EXPLORER}/transaction/{tx_hash}")
     print(f"  Address:     {EXPLORER}/address/{WALLET_ADDR}")
     print()
-    print(f"  Wait ~30s for confirmation, then check:")
-    print(f"  {EXPLORER}/asset/{policy_id.payload.hex()}.{token_name.encode().hex()}")
-    print()
 
-    # Save result
     deployed = {}
     try:
         with open(os.path.join(DIR, "..", "deployed-addresses.json")) as f:
             deployed = json.load(f)
     except: pass
-    
+
     if "cardano" in deployed:
         deployed["cardano"]["tokens"].append({
             "token_name": token_name,

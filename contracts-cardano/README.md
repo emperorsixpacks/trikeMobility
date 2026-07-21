@@ -1,37 +1,31 @@
-// Cardano TricycleNFT deployment — Preprod testnet
+// Cardano TricycleNFT — Mainnet & Preprod Deployment
 //
 // Prerequisites:
 //   1. Install Aiken: curl -sSfL https://install.aiken-lang.org | bash
-//   2. Fund a wallet with tADA from the Cardano Preprod faucet
-//   3. Run: aiken build && aiken blueprint apply && aiken transaction build
+//   2. Fund wallet with ADA (mainnet) or tADA (preprod)
+//   3. Set CARDANO_NETWORK=mainnet or preprod
 //
-// Deployment steps:
-//   aiken build                          # Compile to Plutus blueprint
-//   aiken blueprint convert  # Get the CBOR
-//   aiken transaction build              # Build deployment tx
+// ## Mainnet Deployments
 //
-// The compiled validator will be at: plutus.json
-
-// CIP-25 Metadata template for a 3rike tricycle NFT:
+// Wallet:           addr1vxasusf9vdrthq6kmu984jc4m8czeeyyy8wevufuckwtzwgaq0ry8
+// Policy ID:        a8b910f0213831b4ed8b96f04a4e055de864653482e94d6d76601190
+// Script Address:   addr1wx5tjy8syyurrd8d3wt0qjjwq4w7ser9xjpwjntdwespryqdyggtn
+// User Registry:    addr1w9n6xkny56cy597sanxldf8257gl8vwhrdsdaqqka67c3kqhdk4hx
+// Private Invest:   addr1wx4ctytw9zlxj3g5jgzj6kawzvtjpx6p2rg7kt4frzx9aycym9uax
+// Yield Vault:      addr1w9p27d45r8jgaw7zujz3nk7mdt3gtr2csvdw7dzx4hgpd2sxrf24z
 //
-// {
-//   "721": {
-//     "<policy_id>": {
-//       "TRK-001": {
-//         "name": "3rike #001",
-//         "image": "https://images.unsplash.com/photo-1558981403-c5f9899a28bc",
-//         "description": "Revenue-generating electric tricycle in the 3rike fleet",
-//         "vehicle_id": "RDB-001",
-//         "location": "Lagos, Nigeria",
-//         "weekly_repayment": 70,
-//         "investor_weekly": 9,
-//         "projected_apr": 19
-//       }
-//     }
-//   }
-// }
+// ## Preprod Deployments
 //
-// After deployment on Preprod:
-//   1. Set CARDANO_CONTRACT_ADDRESS in .env
-//   2. Mint tokens via the TricycleNFT policy
-//   3. Verify on Cardano Preprod explorer: https://preprod.cexplorer.io/
+// Wallet:           addr_test1vr7r5w3g85mp7th43y3rjapkzfw9qexttt6tqawjcmk4hmccah9xd
+// Policy ID:        def68337867cb4f1f95b6b811fedbfcdd7780d10a95cc072077088ea
+// Script Address:   addr_test1wr00dqehse7tfu0etd4cz8ldhlxaw7qdzz54esrjqacg36sp45dt3
+// User Registry:    addr_test1wpn6xkny56cy597sanxldf8257gl8vwhrdsdaqqka67c3kqv9zfcr
+// Private Invest:   addr_test1wz4ctytw9zlxj3g5jgzj6kawzvtjpx6p2rg7kt4frzx9aycln3qjr
+// Yield Vault:      addr_test1wpp27d45r8jgaw7zujz3nk7mdt3gtr2csvdw7dzx4hgpd2satak68
+//
+// Run:
+//   CARDANO_NETWORK=mainnet python3 cardano_tx.py read_datums <address>
+//   CARDANO_NETWORK=mainnet BLOCKFROST_PROJECT_ID=... CARDANO_WALLET_ADDRESS=... python3 cardano_tx.py write_datum ...
+//
+// Kill the Midnight lite node:
+//   pkill -f midnight-node 2>/dev/null; pkill -f midnight-faucet 2>/dev/null

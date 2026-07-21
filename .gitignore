@@ -13,6 +13,8 @@ vendor/
 .env
 .env.local
 .env.*.local
+.env.mainnet
+.env.testnet
 
 # Build outputs
 dist/
@@ -76,3 +78,4 @@ kiro.json
 contracts-cardano/wallet/
 contracts-cardano/.deploy-tmp/
 contracts-cardano/mainnet-wallet.json
+/mainnet-wallet.json
