@@ -8,7 +8,7 @@ function required(name: string): string {
 
 export const config = {
   port: Number(process.env.PORT ?? 8080),
-  corsOrigins: (process.env.CORS_ORIGIN ?? "http://localhost:5173,http://localhost:5174")
+  corsOrigins: (process.env.CORS_ORIGIN ?? "http://localhost:5173,http://localhost:5174,https://trike-mobility.vercel.app")
     .split(",")
     .map((s) => s.trim()),
   jwtSecret: required("JWT_SECRET"),
