@@ -58,8 +58,9 @@ export function catalogFor(vehicleId: string): CatalogEntry {
 }
 
 /** Indicative annual yield % derived from the rider repayment model. */
-export function aprFor(vehicleId: string, priceUsd: number): number {
-  if (priceUsd <= 0) return 0;
+export function aprFor(vehicleId: string, pricePerShareUsd: number, totalShares: number): number {
+  if (pricePerShareUsd <= 0 || totalShares <= 0) return 0;
   const entry = catalogFor(vehicleId);
-  return Math.round(((entry.investorWeekly * 52) / priceUsd) * 100);
+  const poolValue = pricePerShareUsd * totalShares;
+  return Math.round(((entry.investorWeekly * 52) / poolValue) * 100);
 }

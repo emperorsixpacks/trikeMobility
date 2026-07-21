@@ -73,7 +73,7 @@ function toTricycleView(id: number, pool: OnchainPool): TricycleView {
     image: cat.image,
     location: cat.location,
     description: cat.description,
-    projectedApr: aprFor(vehicleId, Number(pool.pricePerShareRaw) / 1e6),
+    projectedApr: aprFor(vehicleId, Number(pool.pricePerShareRaw) / 1e6, total),
     weeklyRepayment: cat.weeklyRepayment,
     pricePerShare: String(Number(pool.pricePerShareRaw) / 1e6),
     totalShares: total,
@@ -138,7 +138,7 @@ export async function getPortfolio(userId: number): Promise<PortfolioView> {
       shares: data.shares,
       valueUsdc: String(data.investedUsdc),
       pendingYield: "0", // Private — computed client-side
-      projectedApr: aprFor(vehicleId, 5),
+      projectedApr: aprFor(vehicleId, 5, data.shares),
     });
     totalInvested += data.investedUsdc;
   }
