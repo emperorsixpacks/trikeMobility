@@ -80,33 +80,37 @@ export default function BottomNav() {
             )}
 
             {/* Option 2: Send */}
-            <div className="flex items-center gap-4 cursor-pointer group">
+            <div
+              onClick={() => { navigate(`${base}/wallet`); setIsMenuOpen(false); }}
+              className="flex items-center gap-4 cursor-pointer group"
+            >
               <Send className="w-6 h-6 text-[#9747FF]" fill="#9747FF" />
               <span className="text-lg font-light text-black group-hover:text-gray-700">
                 Send
               </span>
             </div>
 
-            {/* Option 3: Recieve */}
-            <div className="flex items-center gap-4 cursor-pointer group">
+            {/* Option 3: Receive */}
+            <div
+              onClick={() => { navigate(`${base}/wallet`); setIsMenuOpen(false); }}
+              className="flex items-center gap-4 cursor-pointer group"
+            >
               <ArrowDown className="w-6 h-6 text-[#FF9900]" strokeWidth={3} />
               <span className="text-lg font-light text-black group-hover:text-gray-700">
-                Recieve
+                Receive
               </span>
             </div>
 
-            {/* Investor: Browse Marketplace */}
-            {user?.role === "investor" && (
-              <div
-                onClick={() => { navigate(`${base}/investment`); setIsMenuOpen(false); }}
-                className="flex items-center gap-4 cursor-pointer group"
-              >
-                <TrendingUp className="w-6 h-6 text-[#01C259]" />
-                <span className="text-lg font-light text-black group-hover:text-gray-700">
-                  Browse Marketplace
-                </span>
-              </div>
-            )}
+            {/* View Portfolio (all roles) */}
+            <div
+              onClick={() => { navigate(`${base}/investment/portfolio`); setIsMenuOpen(false); }}
+              className="flex items-center gap-4 cursor-pointer group"
+            >
+              <TrendingUp className="w-6 h-6 text-[#01C259]" />
+              <span className="text-lg font-light text-black group-hover:text-gray-700">
+                View Portfolio
+              </span>
+            </div>
           </div>
 
           {/* Close Button */}
