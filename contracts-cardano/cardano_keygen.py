@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """Cardano HD wallet helper for 3rike backend.
 Usage:
-  python3 cardano_keygen.py --derive <child_key_hex>   → returns skey + address
-  python3 cardano_keygen.py --address <child_key_hex>   → returns address only
+  CARDANO_NETWORK=mainnet python3 cardano_keygen.py --derive <child_key_hex>
+  python3 cardano_keygen.py --address <child_key_hex>
 """
-import sys, json, hashlib
+import os, sys, json
 from pycardano import PaymentSigningKey, Network, Address
 
 
 def derive_from_key(child_key_hex: str) -> dict:
-    """Derive a Cardano address from a 32-byte child key."""
     seed = bytes.fromhex(child_key_hex)
     if len(seed) != 32:
         raise ValueError(f"Key must be 32 bytes, got {len(seed)}")
 
+    network = Network.MAINNET if os.environ.get("CARDANO_NETWORK") == "mainnet" else Network.TESTNET
     sk = PaymentSigningKey(seed)
     vk = sk.to_verification_key()
     vkh = vk.hash()
-    addr = Address(payment_part=vkh, network=Network.TESTNET)
+    addr = Address(payment_part=vkh, network=network)
 
     return {
         "address": str(addr),

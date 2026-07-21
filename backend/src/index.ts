@@ -80,5 +80,5 @@ app.get("/contracts/status", async (_req, res) => {
 });
 
 app.listen(config.port, () => {
-  console.log(`3rike backend listening on :${config.port} (Midnight Preprod + Cardano Preprod)`);
+  console.log(`3rike backend listening on :${config.port} (Cardano ${config.cardanoNetwork})`);
 });

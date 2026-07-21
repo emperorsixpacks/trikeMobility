@@ -31,13 +31,15 @@ function deriveChildKey(index: number): Buffer {
 // Cache: index → address (avoids repeated Python calls)
 const addressCache = new Map<number, string>();
 
-/** Derive Cardano Shelley testnet address for user at given index. */
+/** Derive Cardano Shelley address for user at given index (mainnet or testnet based on env). */
 export function deriveAddress(index: number): string {
   if (addressCache.has(index)) return addressCache.get(index)!;
   const childKey = deriveChildKey(index);
+  const env = { ...process.env, CARDANO_NETWORK: config.cardanoNetwork };
   const result = execSync(`python3 ${KEYGEN} --address ${childKey.toString("hex")}`, {
     encoding: "utf-8",
     timeout: 5000,
+    env,
   });
   const { address } = JSON.parse(result);
   addressCache.set(index, address);

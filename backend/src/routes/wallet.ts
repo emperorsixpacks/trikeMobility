@@ -2,6 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "../db.js";
+import { config } from "../config.js";
 import { requireAuth, type AuthedRequest } from "../middleware/auth.js";
 import { getWalletBalance } from "../lib/cardano-wallet.js";
 
@@ -23,6 +24,7 @@ router.get("/balance", requireAuth, async (req: AuthedRequest, res) => {
     0,
   );
 
+  const isMainnet = config.cardanoNetwork === "mainnet";
   res.json({
     address: user.walletAddress,
     lovelace: balance.lovelace,
@@ -30,8 +32,8 @@ router.get("/balance", requireAuth, async (req: AuthedRequest, res) => {
     assets: balance.assets,
     totalInvestedUsdc: String(totalInvested),
     investmentCount: investments.length,
-    network: "cardano-preprod",
-    explorer: `https://preprod.cardanoscan.io/address/${user.walletAddress}`,
+    network: `cardano-${config.cardanoNetwork}`,
+    explorer: `https://${isMainnet ? "" : "preprod."}cardanoscan.io/address/${user.walletAddress}`,
   });
 });
 

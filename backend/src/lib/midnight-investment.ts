@@ -325,9 +325,10 @@ export async function invest(
 ): Promise<InvestResult> {
   const vehicleId = `TRK-${String(tricycleId).padStart(3, "0")}`;
 
+  const env = { ...process.env, CARDANO_NETWORK: config.cardanoNetwork };
   const { stdout, stderr } = await execFileAsync("python3", [
     CARDANO_TX_PY, "invest", vehicleId, String(shares),
-  ], { timeout: 60_000 });
+  ], { timeout: 60_000, env });
 
   if (stderr) console.error("cardano_tx.py stderr:", stderr);
 
@@ -360,9 +361,10 @@ export async function claimYield(
     throw new Error("yield_vault_not_deployed");
   }
 
+  const env = { ...process.env, CARDANO_NETWORK: config.cardanoNetwork };
   const { stdout, stderr } = await execFileAsync("python3", [
     CARDANO_TX_PY, "claim", String(sharesToBurn),
-  ], { timeout: 60_000 });
+  ], { timeout: 60_000, env });
 
   if (stderr) console.error("cardano_tx.py claim stderr:", stderr);
 
@@ -386,9 +388,10 @@ export async function claimYield(
 // ---------------------------------------------------------------------------
 
 export async function writeKycDatum(authorityHash: string, isVerified = true): Promise<string> {
+  const env = { ...process.env, CARDANO_NETWORK: config.cardanoNetwork };
   const { stdout, stderr } = await execFileAsync("python3", [
     CARDANO_TX_PY, "register", authorityHash, String(isVerified),
-  ], { timeout: 60_000 });
+  ], { timeout: 60_000, env });
 
   if (stderr) console.error("cardano_tx.py register stderr:", stderr);
   const trimmed = stdout.trim();
