@@ -31,7 +31,6 @@ export default function Wallet() {
 
   const [copied, setCopied] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
-  const [justReceived, setJustReceived] = useState<number | null>(null);
 
   const handleCopy = async () => {
     if (!address) return;
@@ -42,13 +41,6 @@ export default function Wallet() {
     } catch {
       // ignore
     }
-  };
-
-  const handleReceived = (amount: number) => {
-    setDepositOpen(false);
-    setJustReceived(amount);
-    void loadBalance();
-    setTimeout(() => setJustReceived(null), 6000);
   };
 
   const short = address ? `${address.slice(0, 6)}…${address.slice(-4)}` : "";
@@ -100,12 +92,6 @@ export default function Wallet() {
             <p className="text-xs text-white/70 mt-2">Cardano {balance?.network?.replace("cardano-", "") ?? ""} · wallet</p>
           </div>
         </div>
-
-        {justReceived !== null && (
-          <div className="mb-3 flex items-center gap-2 bg-[#E9F8EE] text-[#067a3a] rounded-xl px-4 py-3 text-sm">
-            <Check className="w-4 h-4" /> Received ${formatUSDC(String(justReceived))} USDC
-          </div>
-        )}
 
         {balanceError && (
           <p className="text-xs text-red-500 text-center mb-3" role="alert">
@@ -170,23 +156,26 @@ export default function Wallet() {
           onClick={() => setDepositOpen(true)}
           className="h-12 bg-[#01C259] hover:bg-[#00a049] text-white rounded-xl font-medium cursor-pointer gap-2"
         >
-          <ArrowDownToLine className="w-4 h-4" /> Fund Wallet (Dev Fund)
+          <ArrowDownToLine className="w-4 h-4" /> Fund Wallet
         </Button>
       </div>
 
-      {/* Deposit (receive) sheet */}
+      {/* Fund sheet — show address + QR, no amount input */}
       {depositOpen && (
         <div className="absolute inset-0 z-50 bg-black/40 flex items-end justify-center animate-in fade-in duration-200">
           <div className="w-full bg-white rounded-t-3xl p-6 pb-8 animate-in slide-in-from-bottom duration-300">
             <div className="mx-auto w-12 h-2 bg-gray-300 rounded-full mb-6" />
-            <h3 className="text-xl font-bold text-gray-900 text-center mb-4">Deposit USDC</h3>
-            <ReceiveCrypto address={address} onReceived={handleReceived} />
+            <h3 className="text-xl font-bold text-gray-900 text-center mb-4">Fund your wallet</h3>
+            <p className="text-xs text-gray-400 text-center mb-4">
+              Send ADA to this address from any Cardano wallet (Eternl, Yoroi, etc.)
+            </p>
+            <ReceiveCrypto address={address} />
             <button
               type="button"
               onClick={() => setDepositOpen(false)}
               className="w-full mt-3 h-11 rounded-xl border border-gray-200 text-gray-600 text-sm cursor-pointer"
             >
-              Cancel
+              Close
             </button>
           </div>
         </div>

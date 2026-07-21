@@ -4,6 +4,7 @@
 
 import { prisma } from "../db.js";
 import { catalogFor, aprFor } from "../lib/catalog.js";
+import { getWalletBalance } from "../lib/cardano-wallet.js";
 import {
   tricycleCount,
   getPool,
@@ -177,6 +178,13 @@ export async function buyShares(userId: number, tricycleId: number, shares: numb
 
   const available = pool.totalShares - pool.sharesSold;
   if (BigInt(shares) > available) throw new InvestmentError("not_enough_shares");
+
+  // Check wallet has sufficient ADA
+  const costLovelace = BigInt(shares) * pool.pricePerShareRaw;
+  const balance = await getWalletBalance(user.walletAddress);
+  if (BigInt(balance.lovelace) < costLovelace) {
+    throw new InvestmentError("insufficient_funds");
+  }
 
   const result = await chainInvest(user.walletIndex ?? 0, tricycleId, BigInt(shares));
 
