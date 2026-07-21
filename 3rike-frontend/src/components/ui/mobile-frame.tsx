@@ -23,7 +23,7 @@ export default function MobileFrame({
   innerClassName = "",
 }: Props) {
   return (
-    <div className="min-h-screen bg-white flex justify-center">
+    <div className="min-h-screen bg-white flex justify-center overflow-x-hidden">
       <div
         className={`w-full max-w-100 ${innerBg} shadow-2xl overflow-hidden min-h-200 relative ${innerClassName}`}
       >
