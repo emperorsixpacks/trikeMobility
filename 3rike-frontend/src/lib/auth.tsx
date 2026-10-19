@@ -1,7 +1,7 @@
 // AuthProvider holds the resolved User + role-specific profile (Driver or
-// Investor) in memory. On boot, if a JWT exists, it calls /auth/me and then —
-// if a cached profile id exists — fetches the profile too. Listens for global
-// 401s (from api.ts) and clears state.
+// Investor) in memory. On boot, if a session token exists, it loads the cached
+// user from localStorage and then — if a cached profile id exists — fetches
+// the profile too. Listens for global 401s (from api.ts) and clears state.
 
 import {
   createContext,
@@ -108,7 +108,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Resolve the cached profile (driver or investor) for the given user. We
   // tolerate failures here — if the cached id is stale we drop it but keep
-  // the user logged in (they just need to re-onboard).
+  // the user logged in (they just need to re-onboard). All reads come from
+  // localStorage in prototype mode.
   const loadProfile = useCallback(
     async (user: User): Promise<{ driver: Driver | null; investor: Investor | null }> => {
       if (user.role === "driver") {
@@ -123,9 +124,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
         // No cached id (or stale one): discover by listing and filtering by
-        // user_id. The backend has no /api/drivers/me endpoint yet — once it
-        // does, swap this for a single GET. Failures here are non-fatal:
-        // user stays logged in but in the "needs onboarding" branch.
+        // user_id. Reads are localStorage-only in prototype mode. Failures
+        // here are non-fatal: user stays logged in but in the "needs
+        // onboarding" branch.
         try {
           const all = await apiListDrivers();
           const mine = all.find((d) => d.user_id === user.id);
@@ -161,8 +162,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const user = await apiMe();
-      // Backend currently doesn't include canton_party_id in /auth/me, so
-      // fall back to whatever we cached locally on the last linkWallet call.
+      // canton_party_id is also mirrored to localStorage on the last
+      // linkWallet call, so restore it if the user object is missing it.
       if (!user.canton_party_id) {
         const cached = getCantonPartyId();
         if (cached) user.canton_party_id = cached;

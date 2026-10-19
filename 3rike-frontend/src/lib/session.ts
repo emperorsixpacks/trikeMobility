@@ -1,10 +1,7 @@
 // Session storage for the authenticated user. Keeps JWT + session ID in
 // localStorage behind a single API so the rest of the app never reaches in
-// directly. Switching to httpOnly cookies later only requires changing this
-// file.
-//
-// We intentionally avoid storing the User object here — call `/auth/me` on
-// boot and let AuthProvider hold the resolved user in memory.
+// directly. In prototype mode the user object is also persisted to
+// localStorage via api.ts.
 
 const TOKEN_KEY = "3rike.token";
 const SESSION_ID_KEY = "3rike.sessionId";
@@ -55,8 +52,8 @@ export function getToken(): string | null {
 }
 
 // Profile IDs are cached locally so we can fetch the user's driver/investor
-// record on boot without an N+1 lookup. The cached ID is verified on every
-// boot via GET /api/{drivers|investors}/{id}; if it 404s we drop it.
+// record on boot without an N+1 lookup. In prototype mode the lookup is a
+// localStorage read.
 
 export function getDriverId(): number | null {
   const raw = localStorage.getItem(DRIVER_ID_KEY);
