@@ -28,6 +28,9 @@ out/
 # TypeScript incremental build info
 *.tsbuildinfo
 
+# Vercel local config
+.vercel
+
 # Logs
 *.log
 npm-debug.log*
